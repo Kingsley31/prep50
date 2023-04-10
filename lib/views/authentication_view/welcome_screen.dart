@@ -56,7 +56,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             builder: (context,AsyncSnapshot<String> snapshot){
               if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasError) {
-                  WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                     _showToast(message: "${snapshot.error}");
                   });
                   print("${snapshot.error}");

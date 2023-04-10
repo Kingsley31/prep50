@@ -229,7 +229,7 @@ class SubjectContainer extends StatelessWidget {
                 width: 197,
                 color: true,
                 onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => TopicScreen())),
+                    MaterialPageRoute(builder: (context) => TopicScreen(subjectId: 2,))),
               )
             ],
           ),

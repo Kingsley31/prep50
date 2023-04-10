@@ -6,6 +6,9 @@ import 'package:prep50/view-models/create_account_screen_viewmodel.dart';
 import 'package:prep50/view-models/home_screen_view_model.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
 import 'package:prep50/view-models/password_reset_screen_viewmodel.dart';
+import 'package:prep50/view-models/prep-study-subjects-viewmodel.dart';
+import 'package:prep50/view-models/study-screen-viewmodel.dart';
+import 'package:prep50/view-models/topic_screen_viewmodel.dart';
 import 'package:prep50/view-models/welcome-screen-viewmodel.dart';
 import 'package:prep50/view-models/info-screen-view-model.dart';
 // import 'package:prep50/views/cbt_view/components/subject_widget.dart';
@@ -32,7 +35,10 @@ void main() async{
             ChangeNotifierProvider(create: (context) => WelcomeScreenViewModel()),
             ChangeNotifierProvider(create: (create) => LoginScreenViewModel()),
             ChangeNotifierProvider(create: (create) => HomeScreenViewModel()),
-            ChangeNotifierProvider(create: (create) => PasswordResetScreenViewModel())
+            ChangeNotifierProvider(create: (create) => PasswordResetScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => PrepStudySubjectsViewModel()),
+            ChangeNotifierProvider(create: (create) => TopicScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => StudyScreenViewModel())
           ],
           child: MyApp()
       )

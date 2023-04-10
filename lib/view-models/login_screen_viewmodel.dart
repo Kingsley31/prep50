@@ -64,24 +64,12 @@ class LoginScreenViewModel extends ChangeNotifier{
     // Once signed in, return the UserCredential
     UserCredential userCredential= await FirebaseAuth.instance.signInWithCredential(credential);
     if(userCredential.user!=null){
-      final String username = userCredential.user?.displayName ?? "";
-      print("Username: ${username.replaceAll(" ","")}");
-      final String phoneNumber = userCredential.user?.phoneNumber ?? "123456789";
-      print("Phone: ${userCredential.user?.phoneNumber}");
-      final String email = userCredential.user?.email ?? "";
-      print("Email: $email");
-
-      String deviceId = await getDeviceToken();
-      String deviceName = await getCurrentDeviceName();
-      LoginResponse loginResponse = await _authService.loginUserWithGoogle(username:username.replaceAll(" ",""),phone: phoneNumber,email: email,deviceId: deviceId,deviceName: deviceName);
-      final user = loginResponse.user;
-      final String accessToken = loginResponse.accessCode;
-      final String refreshToken = loginResponse.refreshToken;
-      await _appData.saveUser(user.toJson());
-      await _appData.saveApiToken(accessToken);
-      await _appData.saveApiRefreshToken(refreshToken);
-      await _appData.setUserLoginStatus(true,AppData.loginTypeGoogle);
-      //await _appData.setRegistrationCompleted(false);
+      // final String username = userCredential.user?.displayName ?? "";
+      // print("Username: ${username.replaceAll(" ","")}");
+      // final String phoneNumber = userCredential.user?.phoneNumber ?? "123456789";
+      // print("Phone: ${userCredential.user?.phoneNumber}");
+      // final String email = userCredential.user?.email ?? "";
+      // print("Email: $email");
       return userCredential;
     }else{
       throw Exception('Failed to login user.');
@@ -101,30 +89,44 @@ class LoginScreenViewModel extends ChangeNotifier{
     // Once signed in, return the UserCredential
     UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
 
-
-
-
     if(userCredential.user!=null){
-      final username = userCredential.user?.displayName ?? "";
-      final phoneNumber = userCredential.user?.phoneNumber ?? "123456789";
-      final email = userCredential.user?.email ?? "";
-
-      String deviceId = await getDeviceToken();
-      String deviceName = await getCurrentDeviceName();
-      LoginResponse loginResponse = await _authService.loginUserWithFacebook(username:username.replaceAll(" ",""),phone: phoneNumber,email: email,deviceId: deviceId,deviceName: deviceName);
-      final user = loginResponse.user;
-      final String accessToken = loginResponse.accessCode;
-      final String refreshToken = loginResponse.refreshToken;
-      await _appData.saveUser(user.toJson());
-      await _appData.saveApiToken(accessToken);
-      await _appData.saveApiRefreshToken(refreshToken);
-      await _appData.setUserLoginStatus(true,AppData.loginTypeFacebook);
-      //await _appData.setRegistrationCompleted(false);
+      // final username = userCredential.user?.displayName ?? "";
+      // final phoneNumber = userCredential.user?.phoneNumber ?? "123456789";
+      // final email = userCredential.user?.email ?? "";
       return userCredential;
     }else{
       throw Exception('Failed to login user.');
     }
-    return userCredential;
+  }
+
+  Future<LoginResponse> authenticateApiWithFacebookDetails(String username,String phoneNumber, String email) async {
+    String deviceId = await getDeviceToken();
+    String deviceName = await getCurrentDeviceName();
+    LoginResponse loginResponse = await _authService.loginUserWithFacebook(username:username.replaceAll(" ",""),phone: phoneNumber,email: email,deviceId: deviceId,deviceName: deviceName);
+    final user = loginResponse.user;
+    final String accessToken = loginResponse.accessCode;
+    final String refreshToken = loginResponse.refreshToken;
+    await _appData.saveUser(user.toJson());
+    await _appData.saveApiToken(accessToken);
+    await _appData.saveApiRefreshToken(refreshToken);
+    await _appData.setUserLoginStatus(true,AppData.loginTypeFacebook);
+    //await _appData.setRegistrationCompleted(false);
+    return loginResponse;
+  }
+
+  Future<LoginResponse> authenticateApiWithGoogleDetails(String username,String phoneNumber, String email) async {
+    String deviceId = await getDeviceToken();
+    String deviceName = await getCurrentDeviceName();
+    LoginResponse loginResponse = await _authService.loginUserWithGoogle(username:username.replaceAll(" ",""),phone: phoneNumber,email: email,deviceId: deviceId,deviceName: deviceName);
+    final user = loginResponse.user;
+    final String accessToken = loginResponse.accessCode;
+    final String refreshToken = loginResponse.refreshToken;
+    await _appData.saveUser(user.toJson());
+    await _appData.saveApiToken(accessToken);
+    await _appData.saveApiRefreshToken(refreshToken);
+    await _appData.setUserLoginStatus(true,AppData.loginTypeGoogle);
+    //await _appData.setRegistrationCompleted(false);
+    return loginResponse;
   }
 
 }

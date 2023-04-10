@@ -1,28 +1,28 @@
+import 'package:prep50/models/objective.dart';
+
 class Topic{
   final int id;
-  final int subjId;
-  final String topic;
-  final String jw;
-  final String createdAt;
-  final String updatedAt;
+  final int subjectId;
+  final String title;
+  final String details;
+  final List<Objective> objectives;
 
 
-  Topic(this.id,this.subjId,this.topic,this.jw,this.createdAt,this.updatedAt);
+
+  Topic(this.id,this.subjectId,this.title,this.details,this.objectives);
 
   Topic.fromJson(Map<String, dynamic> json)
       : id = json['id'],
-        subjId = json['subj_id'],
-        topic = json['topic'],
-        jw = json['jw'],
-        createdAt = json['created_at'],
-        updatedAt = json['updated_at'];
+        subjectId = json['subject_id'],
+        title = json['title'],
+        details = json['details'],
+        objectives = json.containsKey('objectives') ? json['objectives'].map<Objective>((objective) => Objective.fromJson(objective)).toList():[];
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'subj_id': subjId,
-    'topic':topic,
-    'jw':jw,
-    'created_at':createdAt,
-    'updated_at':updatedAt
+    'subject_id': subjectId,
+    'title':title,
+    'details':details,
+    'objectives':objectives.map<Map<String,dynamic>>((objective) => objective.toJson()).toList()
   };
 }

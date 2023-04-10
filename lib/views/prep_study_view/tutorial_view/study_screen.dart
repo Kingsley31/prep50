@@ -1,83 +1,177 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:prep50/models/lesson.dart';
+import 'package:prep50/models/objective.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
+import 'package:prep50/view-models/study-screen-viewmodel.dart';
+import 'package:prep50/views/cbt_view/quiz_view/quiz_screen.dart';
+import 'package:prep50/views/prep_study_view/quiz_view/quiz_question_screen.dart';
 import 'package:prep50/views/prep_study_view/tutorial_view/study_widget.dart';
 import 'package:prep50/widgets/app_button.dart';
+import 'package:provider/provider.dart';
 
-class StudyScreen extends StatelessWidget {
-  // const StudyScreen(
-  //     {Key key,})
-  //     : super(key: key);
+import '../../../models/topic.dart';
+import '../../../widgets/app_back_icon.dart';
+
+class StudyScreen extends StatefulWidget {
+  final Objective currentObjective;
+  final Topic currentTopic;
+  StudyScreen({required this.currentObjective,required this.currentTopic});
+  @override
+  State<StudyScreen> createState() => _StudyScreenState();
+}
+
+class _StudyScreenState extends State<StudyScreen> {
+  late String selectedObjective;
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    selectedObjective = widget.currentObjective.title;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      StudyScreenViewModel studyScreenViewModel = Provider.of<StudyScreenViewModel>(context,listen: false);
+      studyScreenViewModel.currentTopic=widget.currentTopic;
+      studyScreenViewModel.currentObjective = widget.currentObjective;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    Set<String> objectiveStringList = widget.currentTopic.objectives.map((objective) => objective.title).toSet();
     return Scaffold(
-      // floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
-      // floatingActionButton: FloatingActionButton(
-      //   // onPressed: (),
-      //   backgroundColor: Color(0xffffffff),
-      //   child: Container(
-      //       height: 35,
-      //       width: 35,
-      //       color: Color(0xfffff4f0),
-      //       child: Row(
-      //         mainAxisAlignment: MainAxisAlignment.center,
-      //         children: [
-      //           AppText.heading2S("T"),
-      //           AppText.heading5S("T"),
-      //         ],
-      //       )),
-      // ),
       backgroundColor: Color(0xffffffff),
-      body: Column(
-        children: [
-          Container(
-            height: 92,
-            width: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(13.5),
-                  child: Row(
-                    children: [
-                      Container(
-                        height: 22,
-                        width: 22,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle, color: kPrimaryColor),
-                        child: Icon(
-                          Icons.arrow_back_ios_rounded,
-                          color: Color(0xffffffff),
-                          size: 15,
-                        ),
+      body: Consumer<StudyScreenViewModel>(
+        builder: (context,studyScreenViewModel,child) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 92,
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(13.5),
+                      child: Row(
+                        children: [
+                          AppBackIcon(),
+                          SizedBox(
+                            width: 17,
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: AppText.heading5M(widget.currentTopic.title),
+                          ),
+                        ],
                       ),
-                      SizedBox(
-                        width: 17,
-                      ),
-                      AppText.heading5M("Basics and concept of Government")
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Container(
+                  height: 40,
+                  width: 300,
+                  decoration: BoxDecoration(
+                      color: Color(0xfffff4f0),
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DropdownButton(
+                      isExpanded: true,
+                        icon: Icon(Icons.arrow_drop_down,color: kPrimaryColor,),
+                        value: selectedObjective.trim(),
+                        items: objectiveStringList.map<DropdownMenuItem<String>>((String objective) {
+                          return DropdownMenuItem<String>(
+                            value: objective,
+                            child: AppText.heading6(objective,multiText: true,color: kPrimaryColor,),
+                          );
+                        }).toList(),
+                        onChanged: (value){
+                          setState((){
+                            selectedObjective = value.toString();
+                            Objective selectedObj = studyScreenViewModel.getSelectObjective(selectedObjective);
+                            studyScreenViewModel.currentObjective=selectedObj;
+                          });
+                        }
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          // Divider(
-          //   color: Color(0xffE5E5E5),
-          // ),
-          SizedBox(height: 2),
-          Expanded(child: StudyWidget()),
-          Row(
-            children: [
+              ),
+              SizedBox(height: 5),
               Expanded(
-                  child:
-                      AppButton(title: "Next Page", width: 197, color: true)),
+                flex: 2,
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: SelectableHtml(data: studyScreenViewModel.currentLesson.content.trim(),shrinkWrap: true,),
+                    ),
+                  ),
+              ),
+
+              Container(
+                padding: EdgeInsets.all(10),
+                child: studyScreenViewModel.showNextAndPrevButton ? _buildNextAndButtons(studyScreenViewModel): _buildOnlyNextButton(studyScreenViewModel),
+              )
             ],
-          ),
-          SizedBox(
-            height: 3,
-          ),
-        ],
+          );
+        }
       ),
     );
+  }
+
+  Widget _buildNextAndButtons(StudyScreenViewModel studyScreenViewModel) {
+    return Row(
+      children: [
+        AppButton(
+          title: "Previous",
+          width: 100,
+          color: false,
+          onTap: (){
+            studyScreenViewModel.gotoPrevLesson();
+          },
+        ),
+        Spacer(flex: 1,),
+        Expanded(
+          flex: 2,
+          child: AppButton(
+              title: "Next Page",
+              width: 200,
+              color: true,
+              onTap: (){
+                _gotoNextLesson(studyScreenViewModel);
+              },
+          ),
+        ),
+      ],
+    );
+
+  }
+
+  Widget _buildOnlyNextButton(StudyScreenViewModel studyScreenViewModel) {
+    return Center(
+      child: AppButton(
+          title: "Next Page",
+          width: 200,
+          color: true,
+          onTap: (){
+            _gotoNextLesson(studyScreenViewModel);
+          },
+      ),
+    );
+  }
+
+  void _gotoNextLesson(StudyScreenViewModel studyScreenViewModel) {
+    final bool lessonsNotCompleted = studyScreenViewModel.gotoNextLesson();
+    if(lessonsNotCompleted == false){
+      Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => QuizQuestionScreen()));
+    }
   }
 }

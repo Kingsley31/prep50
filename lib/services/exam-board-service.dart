@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:prep50/models/exam_board.dart';
 import 'package:http/http.dart' as http;
 
+import '../constants/string_data.dart';
+
 class ExamBoardService{
-  //final String baseUrl = "https://730793d0-3f8d-4d32-ac04-9e01b3e4bff7.mock.pstmn.io";
-  final String baseUrl = "https://prep50.herokuapp.com";
+  final String baseUrl = BASE_URL;
   final String examBoardEndpoint = "/resources/exams";
 
   Future<List<ExamBoard>> getAllExamBoards() async {
@@ -30,4 +31,6 @@ class ExamBoardService{
       throw Exception('Failed to load Exam Boards is the device online');
     }
   }
+
+
 }

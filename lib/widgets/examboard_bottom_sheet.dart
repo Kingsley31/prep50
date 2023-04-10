@@ -81,7 +81,7 @@ class _ExamBoardsBottomSheetState extends State<ExamBoardsBottomSheet> {
                 builder: (context,AsyncSnapshot<List<ExamBoard>> snapshot){
                   if (snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasError) {
-                      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         _showToast(message: "${snapshot.error}");
                       });
                       log("${snapshot.error}");

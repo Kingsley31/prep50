@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../services/auth-service.dart';
 import '../storage/app_data.dart';
+import '../models/user.dart' as appModel;
 
 class HomeScreenViewModel extends ChangeNotifier{
   final AuthService _authService = AuthService();
@@ -12,6 +13,13 @@ class HomeScreenViewModel extends ChangeNotifier{
 
   Future<bool> get userIsLoggedIn async{
     return await _appData.getUserLoginStatus();
+  }
+
+  Future<appModel.User> getLoggedInUser() async {
+    final userJson = await _appData.getUser();
+    final user = appModel.User.fromJson(userJson!);
+    print(user);
+    return user;
   }
 
   logoutUser() async {

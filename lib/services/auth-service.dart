@@ -3,10 +3,11 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:prep50/models/login_response.dart';
 import 'package:prep50/utils/exceptions.dart';
+import '../constants/string_data.dart';
 import '../models/user.dart';
 
 class AuthService{
-  final String baseUrl = "https://prep50.herokuapp.com";
+  final String baseUrl = BASE_URL;
 
 
   Future<LoginResponse> registerUser(String username,String email,String phone,String password) async {
@@ -97,9 +98,9 @@ class AuthService{
 
     if (response.statusCode == 200) {
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
-      String accessCode = jsonResponse["access"];
-      String refreshToken = jsonResponse["refresh"];
-      User user  = User.fromJson(jsonResponse["user"]);
+      String accessCode = jsonResponse["data"]["access"];
+      String refreshToken = jsonResponse["data"]["refresh"];
+      User user  = User.fromJson(jsonResponse["data"]["user"]);
       LoginResponse loginResponse = LoginResponse(user: user, accessCode: accessCode, refreshToken: refreshToken);
       return loginResponse;
     }else if(response.statusCode == 400){
@@ -139,9 +140,9 @@ class AuthService{
 
     if (response.statusCode == 200) {
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
-      String accessCode = jsonResponse["access"];
-      String refreshToken = jsonResponse["refresh"];
-      User user  = User.fromJson(jsonResponse["user"]);
+      String accessCode = jsonResponse["data"]["access"];
+      String refreshToken = jsonResponse["data"]["refresh"];
+      User user  = User.fromJson(jsonResponse["data"]["user"]);
       LoginResponse loginResponse = LoginResponse(user: user, accessCode: accessCode, refreshToken: refreshToken);
       return loginResponse;
     }else if(response.statusCode == 400){

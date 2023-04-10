@@ -25,7 +25,7 @@ class AppToast {
     );
 
     //Show the toast message
-    fToast?.showToast(
+    fToast.showToast(
       child: toast,
       gravity: ToastGravity.CENTER,
       toastDuration: Duration(seconds: 4),

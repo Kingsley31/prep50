@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/models/subject.dart';
+import 'package:prep50/utils/exceptions.dart';
+
+import '../models/topic.dart';
 
 class SubjectService{
   //final String baseUrl = "https://730793d0-3f8d-4d32-ac04-9e01b3e4bff7.mock.pstmn.io";
-  final String baseUrl = "https://prep50.herokuapp.com";
+  final String baseUrl = BASE_URL;
   final String subjectEndpoint = "/resources/subjects";
   final String subjectEndpointWithTopic = "/resources/subjects";
 
@@ -35,5 +39,61 @@ class SubjectService{
       // If the server did not return a 200 OK response, then throw an exception.
       throw Exception('Failed to load subjects, is the device online');
     }
+  }
+
+  Future<List<Subject>> getUserExamSubjects(String exam,String accessCode) async {
+    final String userExamSubjectsEndpoint = "/study/subjects";
+    final response = await http.post(
+      Uri.parse('$baseUrl$userExamSubjectsEndpoint'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessCode',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String,dynamic>{
+        "exam":[exam],
+        "withObjective":false
+      })
+    );
+
+    if(response.statusCode == 200){
+      final jsonResponse = jsonDecode(response.body);
+      final responseDataJson = jsonResponse["data"];
+      final  List<dynamic> subjectListJson = responseDataJson[exam.toUpperCase()];
+      final List<Subject> subjectList = subjectListJson.map((subjectJson) => Subject.fromJson(subjectJson)).toList();
+      return subjectList;
+    }
+
+    throw ValidationException(message: "Error fetching subject, is the device online", errors: []);
+  }
+
+
+  Future<List<Topic>> getSubjectTopicsAndLessons(int subject_id,String accessCode) async {
+    final topicsAndLessonsEndpoint = "/study/topics";
+    final response = await http.post(
+        Uri.parse('$baseUrl$topicsAndLessonsEndpoint'),
+      headers: < String, String>{
+        'Authorization': 'Bearer $accessCode',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String,dynamic>{
+        "subject": [subject_id],
+        "objective": [],
+        "withObjective": true,
+        "withLesson": true,
+        "filterEmptyTopic": true,
+        "filterEmptyObjective": true
+      }),
+    );
+
+    if(response.statusCode == 200){
+      final jsonResponse = jsonDecode(response.body);
+      final List<dynamic> topicsJsonList = jsonResponse["data"];
+      print(topicsJsonList);
+      final List<Topic> topicsAndLessonsList = topicsJsonList.map((topicJson) => Topic.fromJson(topicJson)).toList();
+      return topicsAndLessonsList;
+    }
+
+    throw ValidationException(message: "Error fetching topics, is the device online", errors: []);
+
   }
 }

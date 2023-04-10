@@ -23,11 +23,15 @@ class TopicCard extends StatelessWidget {
       //     context, MaterialPageRoute(builder: (context) => StudyScreen())),
       child: Row(
         children: [
-          AppText.heading6(
-            topic,
-            color: Color(0xff666666),
+          Expanded(
+            flex: 2,
+            child: AppText.heading6(
+              topic,
+              color: Color(0xff666666),
+              multiText: true,
+            ),
           ),
-          Spacer(),
+          SizedBox(width: 20,),
           Container(
             height: 25,
             width: 32,

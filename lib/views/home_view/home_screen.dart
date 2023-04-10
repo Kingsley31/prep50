@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:prep50/models/user.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/views/Notification_view/notification_screen_not_empty.dart';
 import 'package:prep50/widgets/app_text_field.dart';
+import 'package:provider/provider.dart';
 
+import '../../view-models/home_screen_view_model.dart';
 import 'components/drawer.dart';
 import 'components/feed.dart';
 // import 'package:prep50/views/quiz_view/components/countdown_box.dart';
@@ -14,11 +17,18 @@ import 'components/feed.dart';
 // import 'package:prep50/widgets/app_button.dart';
 // import 'package:prep50/views/quiz_view/components/selection_button.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   // const HomeScreen ({ Key? key }) : super(key: key);
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
+    HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context,listen: false);
     return Scaffold(
       key: scaffoldKey,
       drawer: AppDrawer(),
@@ -57,9 +67,27 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 10),
-                      AppText.captionText(
-                        "👋Hello, excited to \nsee you Sonofigma",
-                        multiText: true,
+                      Expanded(
+                        flex: 2,
+                        child: FutureBuilder<User>(
+                            future: homeScreenViewModel.getLoggedInUser(),
+                            builder: (context,snapshot){
+                              if(snapshot.hasData){
+                                return AppText.captionText(
+                                  "👋Hello, excited to \nsee you ${snapshot.data?.username}",
+                                  multiText: true,
+                                );
+                              }
+
+                              return SizedBox(
+                                height: 20.0,
+                                width: 20.0,
+                                child: CircularProgressIndicator(
+                                  color: kPrimaryColor,
+                                ),
+                              );
+                            },
+                        ),
                       ),
                       Spacer(),
                       GestureDetector(

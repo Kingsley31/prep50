@@ -79,7 +79,7 @@ class _InfoScreenState extends State<InfoScreen> {
                   builder: (context,AsyncSnapshot<List<Subject>> snapshot) {
                     if (snapshot.connectionState == ConnectionState.done) {
                       if (snapshot.hasError) {
-                        WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+                        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                           appToast?.showToast(message: "${snapshot.error}");
                         });
                         log("${snapshot.error}");

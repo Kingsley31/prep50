@@ -18,6 +18,8 @@ import 'package:provider/provider.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 
 import '../../utils/exceptions.dart';
+import '../../utils/third-party-login-info-validator.dart';
+import '../../widgets/app_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -177,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           }catch(e){
                             progressDialog.close();
                             appToast?.showToast(message: e.toString().substring(11));
-                            print(e.toString().substring(11));
+                            print(e.toString());
                           }
 
                         }
@@ -214,9 +216,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     elevation: 10.0,
                                   );
                                   final userCredentials = await loginScreenViewModel.signInWithFacebook();
+                                  final ThirdPartyLoginInfo thirdPartyLoginInfo = await ThirdPartyLoginInfoValidator.validate(context, userCredentials.user?.displayName, userCredentials.user?.email, userCredentials.user?.phoneNumber);
+                                  final loginResponse = await loginScreenViewModel.authenticateApiWithFacebookDetails(thirdPartyLoginInfo.username, thirdPartyLoginInfo.phoneNumber, thirdPartyLoginInfo.email);
                                   progressDialog.close();
                                   Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(builder: (context) => HomeView()));
+
                                 }on ValidationException catch(e){
                                   progressDialog.close();
                                   appToast?.showToast(message: e.message);
@@ -255,6 +260,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     elevation: 10.0,
                                   );
                                   final userCredentials = await loginScreenViewModel.signInWithGoogle();
+                                  final ThirdPartyLoginInfo thirdPartyLoginInfo = await ThirdPartyLoginInfoValidator.validate(context, userCredentials.user?.displayName, userCredentials.user?.email, userCredentials.user?.phoneNumber);
+                                  final loginResponse = await loginScreenViewModel.authenticateApiWithGoogleDetails(thirdPartyLoginInfo.username, thirdPartyLoginInfo.phoneNumber, thirdPartyLoginInfo.email);
                                   progressDialog.close();
                                   Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(builder: (context) => HomeView()));

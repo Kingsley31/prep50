@@ -2,8 +2,13 @@ import 'package:prep50/utils/email_validator.dart';
 
 String? nameValidator(String? name){
    if(name==null || name.isEmpty){
-    return "Please enter a valid name";
+    return "Please enter a valid username";
    }
+
+   if(name.contains(" ")){
+     return "Username must not contain space";
+   }
+
    return null;
  }
 

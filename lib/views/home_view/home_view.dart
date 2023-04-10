@@ -6,10 +6,10 @@ import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/views/authentication_view/login_screen.dart';
 import 'package:prep50/views/cafe/cafe_Screen.dart';
 import 'package:prep50/views/cbt_view/quiz_view/quiz_screen.dart';
-import 'package:prep50/views/prep_study_view/podcast_view/podcast_subject_card.dart';
 import 'package:provider/provider.dart';
 
 import '../../view-models/home_screen_view_model.dart';
+import '../prep_study_view/tutorial_view/prep_study_screen.dart';
 import 'home_screen.dart';
 
 class HomeView extends StatefulWidget {
@@ -32,7 +32,7 @@ class HomeViewState extends State<HomeView>{
   List<Widget> _buildScreens() {
     return [
       HomeScreen(),
-      PodcastSubjectCard(),
+      PrepStudyScreen(),
       CafeScreen(),
       // HomeCard(),
       QuizScreen(),
@@ -89,7 +89,7 @@ class HomeViewState extends State<HomeView>{
         child: FloatingActionButton(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => Scaffold(body: PodcastSubjectCard())));
+                  builder: (context) => PrepStudyScreen()));
             },
             backgroundColor: Color(0xffffffff),
             child: Icon(
