@@ -3,7 +3,7 @@
 class Lesson{
   int id;
   int subjectId;
-  int objectiveId;
+  int? objectiveId;
   String title;
   String content;
   String videoUrl;
@@ -15,7 +15,7 @@ class Lesson{
   Lesson({
     required this.id,
     required this.subjectId,
-    required this.objectiveId,
+    this.objectiveId,
     required this.title,
     required this.content,
     required this.videoUrl,
@@ -28,7 +28,7 @@ class Lesson{
   Lesson.fromJson(Map<String,dynamic> json):
       id = json["id"],
       subjectId = json["subject_id"],
-      objectiveId = json["objective_id"],
+      objectiveId = json.containsKey("objective_id")?json["objective_id"]:null,
       title = json["title"],
       content = json["content"],
       videoUrl = json["video_url"],

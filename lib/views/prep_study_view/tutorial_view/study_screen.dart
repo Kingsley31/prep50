@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:prep50/models/lesson.dart';
 import 'package:prep50/models/objective.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/study-screen-viewmodel.dart';
-import 'package:prep50/views/cbt_view/quiz_view/quiz_screen.dart';
 import 'package:prep50/views/prep_study_view/quiz_view/quiz_question_screen.dart';
-import 'package:prep50/views/prep_study_view/tutorial_view/study_widget.dart';
 import 'package:prep50/widgets/app_button.dart';
 import 'package:provider/provider.dart';
 
