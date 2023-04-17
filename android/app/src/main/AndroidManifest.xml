@@ -5,6 +5,7 @@
     </queries>
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
+        android:usesCleartextTraffic="true"
         android:label="prep50"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
