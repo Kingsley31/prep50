@@ -6,7 +6,10 @@ import 'package:prep50/view-models/create_account_screen_viewmodel.dart';
 import 'package:prep50/view-models/home_screen_view_model.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
 import 'package:prep50/view-models/password_reset_screen_viewmodel.dart';
+import 'package:prep50/view-models/podcast_screen_viewmodel.dart';
+import 'package:prep50/view-models/podcast_topic_screen_viewmodel.dart';
 import 'package:prep50/view-models/prep-study-subjects-viewmodel.dart';
+import 'package:prep50/view-models/quiz-question-screen-viewmodel.dart';
 import 'package:prep50/view-models/study-screen-viewmodel.dart';
 import 'package:prep50/view-models/topic_screen_viewmodel.dart';
 import 'package:prep50/view-models/welcome-screen-viewmodel.dart';
@@ -38,7 +41,10 @@ void main() async{
             ChangeNotifierProvider(create: (create) => PasswordResetScreenViewModel()),
             ChangeNotifierProvider(create: (create) => PrepStudySubjectsViewModel()),
             ChangeNotifierProvider(create: (create) => TopicScreenViewModel()),
-            ChangeNotifierProvider(create: (create) => StudyScreenViewModel())
+            ChangeNotifierProvider(create: (create) => StudyScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => QuizQuestionScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => PodcastTopicScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => PodcastScreenViewModel())
           ],
           child: MyApp()
       )

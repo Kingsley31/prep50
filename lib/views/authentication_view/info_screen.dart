@@ -24,6 +24,7 @@ class InfoScreen extends StatefulWidget {
 
 class _InfoScreenState extends State<InfoScreen> {
   AppToast? appToast;
+  final GlobalKey<TooltipState> tooltipkey = GlobalKey<TooltipState>();
 
 
   @override
@@ -56,20 +57,36 @@ class _InfoScreenState extends State<InfoScreen> {
                 SizedBox(
                   height: 20,
                 ),
-                Row(
-                  children: [
-                    Icon(Icons.info),
-                    SizedBox(width: 10,),
-                    Expanded(
-                        child: Consumer<InfoScreenViewModel>(
-                          builder: (context,infoScreenVM,child) {
-                            return AppText.heading6( "Kindly select your ${infoScreenVM.getSelectedExamboard?.name ?? ""} subject combination",multiText: true,);
-                          }
-                    ),
-                    )
-
-
-                  ],
+                Consumer<InfoScreenViewModel>(
+                    builder: (context,infoScreenVM,child) {
+                      return Row(
+                        children: [
+                          Tooltip(
+                            message: "we recommend that you select ${infoScreenVM.getSelectedExamboard?.subject_count} subjects only",
+                            child: IconButton(
+                              icon: Icon(Icons.info),
+                              onPressed: (){
+                                tooltipkey.currentState?.ensureTooltipVisible();
+                              },
+                            ),
+                            showDuration: Duration(seconds: 10),
+                            key: tooltipkey,
+                            padding: EdgeInsets.symmetric(vertical: 15,horizontal: 15),
+                            margin: EdgeInsets.symmetric(horizontal: 20.0),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            textStyle: TextStyle(color: Colors.white),
+                            triggerMode: TooltipTriggerMode.manual,
+                          ),
+                          SizedBox(width: 10,),
+                          Expanded(
+                            child: AppText.heading6( "Kindly select your ${infoScreenVM.getSelectedExamboard?.name ?? ""} subject combination",multiText: true,),
+                            ),
+                        ],
+                      );
+                    }
                 ),
                 SizedBox(
                   height: 40,

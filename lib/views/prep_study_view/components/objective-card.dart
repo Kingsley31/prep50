@@ -40,7 +40,9 @@ class ObjectiveCard extends StatelessWidget {
                   color: passColor ? kSuccessLight : kErrorLightColor),
               child: Center(
                 child: showIcon
-                    ? Icon(Icons.play_arrow_outlined)
+                    ? Container(
+                        child: Image.asset("assets/png/podcast_objective_play.png"),
+                      )
                     : Text(
                   passmark!,
                   style: GoogleFonts.sarabun(

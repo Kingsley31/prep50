@@ -5,6 +5,7 @@ import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/study-screen-viewmodel.dart';
 import 'package:prep50/views/prep_study_view/quiz_view/quiz_question_screen.dart';
+import 'package:prep50/views/prep_study_view/tutorial_view/components/take-quiz-bottom-sheet-dialog.dart';
 import 'package:prep50/widgets/app_button.dart';
 import 'package:provider/provider.dart';
 
@@ -139,8 +140,8 @@ class _StudyScreenState extends State<StudyScreen> {
         Expanded(
           flex: 2,
           child: AppButton(
-              title: "Next Page",
-              width: 200,
+              title: studyScreenViewModel.completedLessons ? "Take a quick quiz":"Next Page",
+              width:studyScreenViewModel.completedLessons? 250: 200,
               color: true,
               onTap: (){
                 _gotoNextLesson(studyScreenViewModel);
@@ -153,10 +154,11 @@ class _StudyScreenState extends State<StudyScreen> {
   }
 
   Widget _buildOnlyNextButton(StudyScreenViewModel studyScreenViewModel) {
+    print("Completed Lessons: ${studyScreenViewModel.completedLessons}");
     return Center(
       child: AppButton(
-          title: "Next Page",
-          width: 200,
+          title: studyScreenViewModel.completedLessons ? "Take a quick quiz":"Next Page",
+          width:studyScreenViewModel.completedLessons? 250: 200,
           color: true,
           onTap: (){
             _gotoNextLesson(studyScreenViewModel);
@@ -165,10 +167,11 @@ class _StudyScreenState extends State<StudyScreen> {
     );
   }
 
-  void _gotoNextLesson(StudyScreenViewModel studyScreenViewModel) {
+  void _gotoNextLesson(StudyScreenViewModel studyScreenViewModel)async {
     final bool lessonsNotCompleted = studyScreenViewModel.gotoNextLesson();
     if(lessonsNotCompleted == false){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => QuizQuestionScreen()));
+      await TakeQuizBottomSheetDialog.showTakeQuizBottomSheetDialog(context);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => QuizQuestionScreen(currentObjective: studyScreenViewModel.currentObjective,)));
     }
   }
 }

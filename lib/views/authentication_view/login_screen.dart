@@ -7,6 +7,7 @@ import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
 import 'package:prep50/views/authentication_view/create_account_screen.dart';
+import 'package:prep50/views/authentication_view/info_screen.dart';
 import 'package:prep50/views/authentication_view/password_reset_screen.dart';
 import 'package:prep50/views/home_view/home_view.dart';
 import 'package:prep50/widgets/app_button.dart';
@@ -170,8 +171,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           try{
                             final loginResponse = await loginScreenViewModel.loginUser();
                             progressDialog.close();
+                            if(loginResponse.user.hasRegisteredExam){
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(builder: (context) => HomeView()));
+                              return;
+                            }
                             Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (context) => HomeView()));
+                                MaterialPageRoute(
+                                    builder: (context) => InfoScreen()));
                           }on ValidationException catch(e){
                             progressDialog.close();
                             appToast?.showToast(message: e.message);
@@ -219,9 +226,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   final ThirdPartyLoginInfo thirdPartyLoginInfo = await ThirdPartyLoginInfoValidator.validate(context, userCredentials.user?.displayName, userCredentials.user?.email, userCredentials.user?.phoneNumber);
                                   final loginResponse = await loginScreenViewModel.authenticateApiWithFacebookDetails(thirdPartyLoginInfo.username, thirdPartyLoginInfo.phoneNumber, thirdPartyLoginInfo.email);
                                   progressDialog.close();
+                                  if(loginResponse.user.hasRegisteredExam){
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(builder: (context) => HomeView()));
+                                    return;
+                                  }
                                   Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(builder: (context) => HomeView()));
-
+                                      MaterialPageRoute(
+                                          builder: (context) => InfoScreen()));
                                 }on ValidationException catch(e){
                                   progressDialog.close();
                                   appToast?.showToast(message: e.message);
@@ -233,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }catch(e){
                                   progressDialog.close();
                                   appToast?.showToast(message: e.toString().substring(11));
-                                  print(e.toString().substring(11));
+                                  print(e.toString());
                                 }
                               },
                             )),
@@ -263,8 +275,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   final ThirdPartyLoginInfo thirdPartyLoginInfo = await ThirdPartyLoginInfoValidator.validate(context, userCredentials.user?.displayName, userCredentials.user?.email, userCredentials.user?.phoneNumber);
                                   final loginResponse = await loginScreenViewModel.authenticateApiWithGoogleDetails(thirdPartyLoginInfo.username, thirdPartyLoginInfo.phoneNumber, thirdPartyLoginInfo.email);
                                   progressDialog.close();
+                                  if(loginResponse.user.hasRegisteredExam){
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(builder: (context) => HomeView()));
+                                    return;
+                                  }
                                   Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(builder: (context) => HomeView()));
+                                      MaterialPageRoute(
+                                          builder: (context) => InfoScreen()));
                                 }on ValidationException catch(e){
                                   progressDialog.close();
                                   appToast?.showToast(message: e.message);
@@ -276,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }catch(e){
                                   progressDialog.close();
                                   appToast?.showToast(message: e.toString().substring(11));
-                                  print(e.toString().substring(11));
+                                  print(e.toString());
                                 }
                               },
                             ))

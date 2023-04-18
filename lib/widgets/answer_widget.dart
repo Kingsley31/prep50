@@ -46,9 +46,9 @@ class AnswerWidget extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.symmetric(
                           horizontal: 15.0, vertical: 10),
-                      child: AnswerCard(
-                        index: index + 1,
-                      ),
+                      // child: AnswerCard(
+                      //   index: index + 1,
+                      // ),
                     );
                   })),
         ],

@@ -26,7 +26,7 @@ class Objective{
   Objective.fromJson(Map<String,dynamic> json):
         id = json["id"],
         topicId = json.containsKey("topic_id")?json["topic_id"]:null,
-        objectiveId = json.containsKey("objective_id")?json["objective_id"]:null,
+        objectiveId = json.containsKey("objective_id") ? json["objective_id"]:null,
         title = json["title"],
         details = json["details"],
         progress=json["progress"],

@@ -35,6 +35,8 @@ class _TopicScreenState extends State<TopicScreen> {
     });
 
   }
+
+
   @override
   Widget build(BuildContext context) {
     TopicScreenViewModel topicScreenViewModel = Provider.of<TopicScreenViewModel>(context,listen: false);

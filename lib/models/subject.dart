@@ -12,7 +12,7 @@ class Subject{
   Subject.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         name = json['name'],
-        progress = json["progress"],
+        progress =json.containsKey("progress") ?json["progress"]:0,
        topics=json.containsKey('topics') ? json['topics'].
        map<Topic>((jsonTopic) => Topic.fromJson(jsonTopic)).toList():[];
 

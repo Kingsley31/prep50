@@ -10,11 +10,19 @@ class StudyScreenViewModel extends ChangeNotifier{
   Objective _currentObjective = Objective(id: 0, title: "", details: "", lessons: [Lesson(id: 0, subjectId: 0, objectiveId: 0, title: "", content: "Loading..", videoUrl: "", slideUrl: "", docsUrl: "", createdAt: "", updateAt: "")], progress: 0);
   int _currentLessonIndex = 0;
   int _totalLessons = 0;
+  bool _completedLessons = true;
 
 
+  bool get completedLessons{
+    return _completedLessons;
+  }
   set currentTopic(Topic topic){
     _currentTopic = topic;
     notifyListeners();
+  }
+
+  Objective get currentObjective{
+    return _currentObjective;
   }
 
   set currentObjective(Objective objective){
@@ -22,6 +30,7 @@ class StudyScreenViewModel extends ChangeNotifier{
     _currentObjective = objective;
     _totalLessons = objective.lessons.length - 1;
     _currentLessonIndex = 0;
+    _completedLessons = _currentLessonIndex == _totalLessons;
     notifyListeners();
   }
 
@@ -37,6 +46,7 @@ class StudyScreenViewModel extends ChangeNotifier{
     print(_totalLessons);
     if(_currentLessonIndex<_totalLessons){
       _currentLessonIndex +=1;
+      _completedLessons = _currentLessonIndex == _totalLessons;
       notifyListeners();
       return true;
     }

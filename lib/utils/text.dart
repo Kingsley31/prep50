@@ -7,6 +7,7 @@ class AppText extends StatelessWidget {
   final bool multiText;
   final bool centered;
 
+
   AppText.heading1(this.text,
       {color: Colors.black, this.multiText: false, this.centered: false})
       : style = heading1RegularStyle.copyWith(color: color);
@@ -76,8 +77,8 @@ class AppText extends StatelessWidget {
       : style = heading6MediumStyle.copyWith(color: color);
 
   AppText.heading6S(this.text,
-      {color: Colors.black, this.multiText: false, this.centered: false})
-      : style = heading6SemiBoldStyle.copyWith(color: color);
+      {color: Colors.black, this.multiText: false, this.centered: false,bold:false})
+      : style = heading6SemiBoldStyle.copyWith(color: color,fontWeight: bold?FontWeight.bold:FontWeight.normal);
 
   AppText.textField(this.text,
       {color: Colors.black, this.multiText: false, this.centered: false})

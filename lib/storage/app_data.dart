@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:prep50/models/podcast_topic.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppData {
@@ -74,6 +75,22 @@ class AppData {
   Future<String?> getRefreshToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("api_refresh_token");
+  }
+
+  saveUserSubjectFavouriteTopics(int subject_id,List<PodcastTopic> topics) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("$subject_id", jsonEncode(topics.map<Map<String,dynamic>>((topic) => topic.toJson()).toList()));
+  }
+
+  Future<List<PodcastTopic>> getUserSubjectFavouriteTopics(int subject_id) async{
+    final prefs = await SharedPreferences.getInstance();
+    final String? topicsString = prefs.getString("$subject_id");
+    if(topicsString ==null){
+      return [];
+    }
+    print(topicsString);
+    List<PodcastTopic> topics =  json.decode(topicsString).map<PodcastTopic>((topiJson) => PodcastTopic.fromJson(topiJson)).toList();
+    return topics;
   }
 
 }

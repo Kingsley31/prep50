@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:prep50/constants/string_data.dart';
+import 'package:prep50/models/podcast_topic.dart';
 import 'package:prep50/models/subject.dart';
 import 'package:prep50/utils/exceptions.dart';
 
@@ -32,6 +32,7 @@ class SubjectService{
       // If the server did return a 200 OK response, then parse the JSON.
       final jsonResponse = jsonDecode(response.body);
       List<dynamic> subjectsJson = jsonResponse['data'];
+      print(subjectsJson);
       List<Subject> subjects = subjectsJson.map((subjectJson) => Subject.fromJson(subjectJson)).toList();
       return subjects;
     } else {
@@ -91,6 +92,30 @@ class SubjectService{
       print(topicsJsonList);
       final List<Topic> topicsAndLessonsList = topicsJsonList.map((topicJson) => Topic.fromJson(topicJson)).toList();
       return topicsAndLessonsList;
+    }
+
+    throw ValidationException(message: "Error fetching topics, is the device online", errors: []);
+
+  }
+
+  Future<List<PodcastTopic>> getSubjectTopicsAndPodcasts(int subject_id,String accessCode) async {
+    final topicsAndLessonsEndpoint = "/study/podcast?subject=$subject_id";
+    print(subject_id);
+    final response = await http.get(
+      Uri.parse('$baseUrl$topicsAndLessonsEndpoint'),
+      headers: < String, String>{
+        'Authorization': 'Bearer $accessCode',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if(response.statusCode == 200){
+      final jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
+      final List<dynamic> topicsJsonList = jsonResponse["data"];
+      print(topicsJsonList);
+      final List<PodcastTopic> topicsAndPodcastsList = topicsJsonList.map((topicJson) => PodcastTopic.fromJson(topicJson)).toList();
+      return topicsAndPodcastsList;
     }
 
     throw ValidationException(message: "Error fetching topics, is the device online", errors: []);
