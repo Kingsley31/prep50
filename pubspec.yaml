@@ -54,6 +54,7 @@ dependencies:
   flutter_html: ^2.2.1
   audio_video_progress_bar: ^1.0.1
   audioplayers: ^4.0.1
+  android_id: ^0.2.0
 
 dev_dependencies:
   flutter_test:

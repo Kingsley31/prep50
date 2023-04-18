@@ -316,17 +316,19 @@ class _LoginScreenState extends State<LoginScreen> {
     LoginScreenViewModel loginScreenViewModel = Provider.of<LoginScreenViewModel>(context, listen: false);
     //String? userLoginType = await loginScreenViewModel.userLoginType;
     bool userIsLoggedIn = await loginScreenViewModel.userIsLoggedIn;
+
+    if(userIsLoggedIn==false){return;}
+
     appModel.User loggedInUser = await loginScreenViewModel.getLoggedInUser();
-    if(userIsLoggedIn){
-      if(loggedInUser.hasRegisteredExam){
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomeView()));
-        return;
-      }
+    if(loggedInUser.hasRegisteredExam){
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (context) => InfoScreen()));
+          MaterialPageRoute(builder: (context) => HomeView()));
+      return;
     }
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (context) => InfoScreen()));
+
 
 
   }

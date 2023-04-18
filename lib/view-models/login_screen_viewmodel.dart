@@ -7,7 +7,6 @@ import 'package:prep50/services/auth-service.dart';
 import 'package:prep50/storage/app_data.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:prep50/utils/device_utils.dart';
-import 'package:prep50/utils/pushnotification_utils.dart';
 import 'package:prep50/models/user.dart' as appModel;
 
 class LoginScreenViewModel extends ChangeNotifier{
@@ -34,8 +33,9 @@ class LoginScreenViewModel extends ChangeNotifier{
   }
 
   Future<LoginResponse> loginUser() async {
-    String deviceId = await getDeviceToken();
+    String deviceId = await getCurrentDeviceId();
     String deviceName = await getCurrentDeviceName();
+    print("Device ID: $deviceId");
     LoginResponse loginResponse = await _authService.loginUser(username:_username,password: _password,deviceId: deviceId,deviceName: deviceName);
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
@@ -101,7 +101,7 @@ class LoginScreenViewModel extends ChangeNotifier{
   }
 
   Future<LoginResponse> authenticateApiWithFacebookDetails(String username,String phoneNumber, String email) async {
-    String deviceId = await getDeviceToken();
+    String deviceId = await getCurrentDeviceId();
     String deviceName = await getCurrentDeviceName();
     LoginResponse loginResponse = await _authService.loginUserWithFacebook(username:username.replaceAll(" ",""),phone: phoneNumber,email: email,deviceId: deviceId,deviceName: deviceName);
     final user = loginResponse.user;
@@ -116,7 +116,7 @@ class LoginScreenViewModel extends ChangeNotifier{
   }
 
   Future<LoginResponse> authenticateApiWithGoogleDetails(String username,String phoneNumber, String email) async {
-    String deviceId = await getDeviceToken();
+    String deviceId = await getCurrentDeviceId();
     String deviceName = await getCurrentDeviceName();
     LoginResponse loginResponse = await _authService.loginUserWithGoogle(username:username.replaceAll(" ",""),phone: phoneNumber,email: email,deviceId: deviceId,deviceName: deviceName);
     final user = loginResponse.user;
