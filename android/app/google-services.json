@@ -39,10 +39,10 @@
               "client_type": 3
             },
             {
-              "client_id": "494465541469-s2klu00oefospq810uapud4kehjrmt5j.apps.googleusercontent.com",
+              "client_id": "494465541469-g4ooq4mf5b9fj24i7l2b4i53lo4stsge.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.prep50.prep50"
+                "bundle_id": "com.example.prep50"
               }
             }
           ]
