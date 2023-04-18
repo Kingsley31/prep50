@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:prep50/models/user.dart';
 import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
@@ -21,6 +22,7 @@ import 'package:sn_progress_dialog/progress_dialog.dart';
 import '../../utils/exceptions.dart';
 import '../../utils/third-party-login-info-validator.dart';
 import '../../widgets/app_dialog.dart';
+import 'package:prep50/models/user.dart' as appModel;
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -314,11 +316,18 @@ class _LoginScreenState extends State<LoginScreen> {
     LoginScreenViewModel loginScreenViewModel = Provider.of<LoginScreenViewModel>(context, listen: false);
     //String? userLoginType = await loginScreenViewModel.userLoginType;
     bool userIsLoggedIn = await loginScreenViewModel.userIsLoggedIn;
+    appModel.User loggedInUser = await loginScreenViewModel.getLoggedInUser();
     if(userIsLoggedIn){
+      if(loggedInUser.hasRegisteredExam){
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => HomeView()));
+        return;
+      }
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => HomeView()));
-      return;
+          MaterialPageRoute(
+              builder: (context) => InfoScreen()));
     }
+
 
   }
 }

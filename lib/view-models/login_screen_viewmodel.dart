@@ -8,6 +8,7 @@ import 'package:prep50/storage/app_data.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:prep50/utils/device_utils.dart';
 import 'package:prep50/utils/pushnotification_utils.dart';
+import 'package:prep50/models/user.dart' as appModel;
 
 class LoginScreenViewModel extends ChangeNotifier{
   AuthService _authService = AuthService();
@@ -128,5 +129,10 @@ class LoginScreenViewModel extends ChangeNotifier{
     //await _appData.setRegistrationCompleted(false);
     return loginResponse;
   }
+
+  Future<appModel.User> getLoggedInUser()async {
+    final userJson=await _appData.getUser();
+    return appModel.User.fromJson(userJson!);
+ }
 
 }
