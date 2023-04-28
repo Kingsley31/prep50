@@ -10,9 +10,11 @@ import 'package:provider/provider.dart';
 
 import '../../view-models/home_screen_view_model.dart';
 import '../prep_study_view/tutorial_view/prep_study_screen.dart';
+import '../weekly_quiz/join_quiz_screen.dart';
 import 'home_screen.dart';
 
 class HomeView extends StatefulWidget {
+  static String routeName = "/home";
   // const HomeView({ Key key }) : super(key: key);
 
   @override
@@ -35,7 +37,7 @@ class HomeViewState extends State<HomeView>{
       PrepStudyScreen(),
       CafeScreen(),
       // HomeCard(),
-      QuizScreen(),
+      JoinQuizScreen(),
     ];
   }
 
@@ -88,8 +90,12 @@ class HomeViewState extends State<HomeView>{
         padding: const EdgeInsets.only(bottom: 50.0),
         child: FloatingActionButton(
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PrepStudyScreen()));
+              PersistentNavBarNavigator.pushNewScreen(
+                context,
+                screen: PrepStudyScreen(),
+                withNavBar: true, // OPTIONAL VALUE. True by default.
+              );
+
             },
             backgroundColor: Color(0xffffffff),
             child: Icon(

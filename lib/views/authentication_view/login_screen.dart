@@ -175,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             progressDialog.close();
                             if(loginResponse.user.hasRegisteredExam){
                               Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(builder: (context) => HomeView()));
+                                  MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
                               return;
                             }
                             Navigator.of(context).pushReplacement(
@@ -230,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   progressDialog.close();
                                   if(loginResponse.user.hasRegisteredExam){
                                     Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(builder: (context) => HomeView()));
+                                        MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
                                     return;
                                   }
                                   Navigator.of(context).pushReplacement(
@@ -279,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   progressDialog.close();
                                   if(loginResponse.user.hasRegisteredExam){
                                     Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(builder: (context) => HomeView()));
+                                        MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
                                     return;
                                   }
                                   Navigator.of(context).pushReplacement(
@@ -322,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
     appModel.User loggedInUser = await loginScreenViewModel.getLoggedInUser();
     if(loggedInUser.hasRegisteredExam){
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => HomeView()));
+          MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
       return;
     }
     Navigator.of(context).pushReplacement(

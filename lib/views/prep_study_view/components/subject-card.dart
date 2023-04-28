@@ -35,8 +35,8 @@ class SubjectCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(15),
-        height: 75,
         width: double.infinity,
+        // height: 75,
         color: Color(0xffffffff),
         child:  Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -79,6 +79,7 @@ class SubjectCard extends StatelessWidget {
             SizedBox(width: 10,),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
                   width: 32,
@@ -97,11 +98,11 @@ class SubjectCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Spacer(),
-                Expanded(
-                  flex: 2,
-                    child:Container()
-                ),
+                // Spacer(),
+                // Expanded(
+                //   flex: 2,
+                //     child:Container()
+                // ),
               ],
             )
           ],

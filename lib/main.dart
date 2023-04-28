@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:prep50/utils/color.dart';
-import 'package:prep50/utils/device_utils.dart';
-import 'package:prep50/utils/pushnotification_utils.dart';
 import 'package:prep50/view-models/create_account_screen_viewmodel.dart';
 import 'package:prep50/view-models/home_screen_view_model.dart';
+import 'package:prep50/view-models/join_quiz_screen_viewmodel.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
 import 'package:prep50/view-models/password_reset_screen_viewmodel.dart';
 import 'package:prep50/view-models/podcast_screen_viewmodel.dart';
@@ -12,14 +12,12 @@ import 'package:prep50/view-models/prep-study-subjects-viewmodel.dart';
 import 'package:prep50/view-models/quiz-question-screen-viewmodel.dart';
 import 'package:prep50/view-models/study-screen-viewmodel.dart';
 import 'package:prep50/view-models/topic_screen_viewmodel.dart';
+import 'package:prep50/view-models/weekly_quiz_leader_board_screen_viewmodel.dart';
+import 'package:prep50/view-models/weekly_quiz_question_screen_viewmodel.dart';
 import 'package:prep50/view-models/welcome-screen-viewmodel.dart';
 import 'package:prep50/view-models/info-screen-view-model.dart';
-// import 'package:prep50/views/cbt_view/components/subject_widget.dart';
-import 'package:prep50/views/onboarding%20view/onboarding_screen.dart';
 import 'package:prep50/views/onboarding%20view/splash_screen.dart';
 import 'package:provider/provider.dart';
-// import 'package:prep50/views/authentication_view/onboarding%20view/page1_screen.dart';
-// import 'package:prep50/views/home_view/home_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -28,8 +26,7 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // await getCurrentDeviceName();
-  // await getDeviceToken();
+
   runApp(
       MultiProvider(
           providers: [
@@ -44,7 +41,10 @@ void main() async{
             ChangeNotifierProvider(create: (create) => StudyScreenViewModel()),
             ChangeNotifierProvider(create: (create) => QuizQuestionScreenViewModel()),
             ChangeNotifierProvider(create: (create) => PodcastTopicScreenViewModel()),
-            ChangeNotifierProvider(create: (create) => PodcastScreenViewModel())
+            ChangeNotifierProvider(create: (create) => PodcastScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => JoinQuizScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => WeeklyQuizQuestionScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => WeeklyQuizLeaderBoardScreenViewModel())
           ],
           child: MyApp()
       )
@@ -73,6 +73,11 @@ class MyApp extends StatelessWidget {
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        appBarTheme: AppBarTheme(
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: kPrimaryColor
+          )
+        )
       ),
       home: SplashScreen(),
     );

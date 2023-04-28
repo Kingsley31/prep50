@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/models/objective.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/exceptions.dart';
@@ -198,6 +199,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   }
 
   Widget _buildQuestionWidget(QuizQuestionScreenViewModel quizQuestionScreenViewModel) {
+    print(quizQuestionScreenViewModel.currentQuestion.questionImage);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -210,13 +212,40 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   borderRadius: BorderRadius.circular(10)),
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Center(
-                  child: AppText.textFieldS(
-                    quizQuestionScreenViewModel.currentQuestion.question,
-                    centered: true,
-                    multiText: true,
-                    color: Colors.white,
-                  ),
+                child: Column(
+                  children: [
+                    quizQuestionScreenViewModel.currentQuestion.questionDetails.isNotEmpty?Center(
+                      child: AppText.textFieldS(
+                        "${quizQuestionScreenViewModel.currentQuestion.questionDetails} \n\n",
+                        centered: true,
+                        multiText: true,
+                        color: Colors.white,
+                      ),
+                    ):Container(),
+                    Center(
+                      child: AppText.textFieldS(
+                        quizQuestionScreenViewModel.currentQuestion.question,
+                        centered: true,
+                        multiText: true,
+                        color: Colors.white,
+                      ),
+                    ),
+                    quizQuestionScreenViewModel.currentQuestion.questionImage.isNotEmpty?SizedBox(height: 20,):Container(),
+                    quizQuestionScreenViewModel.currentQuestion.questionImage.isNotEmpty?Center(
+                      child: Image.network(
+                        "$BASE_URL/${quizQuestionScreenViewModel.currentQuestion.questionImage}",
+                        height: 200,
+                        fit: BoxFit.fill,
+                        errorBuilder: (context,object,stackTrace){
+                          return Container(
+                            padding: EdgeInsets.all(20),
+                            color: Colors.white,
+                            child: Center(child: AppText.textFieldS("Error loading Image",centered: true,),),
+                          );
+                        },
+                      ),
+                    ):Container(),
+                  ],
                 ),
               ),
             ),

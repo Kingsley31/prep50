@@ -103,6 +103,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           color: true,
           onTap: () =>
               Navigator.of(context).pushReplacement(MaterialPageRoute(
+                settings:RouteSettings(name: HomeView.routeName),
                 builder: (context) => HomeView(),
               )),
         ),

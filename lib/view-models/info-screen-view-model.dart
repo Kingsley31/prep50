@@ -2,6 +2,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:prep50/models/exam_board.dart';
 import 'package:prep50/models/subject.dart';
+import 'package:prep50/models/user.dart';
 import 'package:prep50/services/auth-service.dart';
 import 'package:prep50/services/exam-board-service.dart';
 import 'package:prep50/services/subject-service.dart';
@@ -57,6 +58,10 @@ class InfoScreenViewModel extends ChangeNotifier{
   Future<Map<String,dynamic>> updateUserSubjects() async{
     final String accessToken = await _appData.getToken() ?? "";
     final Map<String,dynamic> updateUserJsonResponse = await _authService.updateUserSubjects(_selectedExamBoard?.name.toLowerCase() ?? "",_selectedSubjectIds, accessToken);
+    final userJson = await _appData.getUser();
+    User loggedInUser = User.fromJson(userJson!);
+    loggedInUser.hasRegisteredExam = true;
+    await _appData.saveUser(loggedInUser.toJson());
     await _appData.setRegistrationCompleted(true);
     return updateUserJsonResponse;
   }

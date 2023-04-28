@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:prep50/utils/color.dart';
 
 class AppBackIcon extends StatelessWidget {
-  const AppBackIcon({Key? key}) : super(key: key);
+  final Function()? onTap;
+  const AppBackIcon({Key? key,this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pop(context),
+      onTap: onTap??() => Navigator.pop(context),
       child: Container(
         height: 22,
         width: 22,

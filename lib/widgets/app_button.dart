@@ -13,13 +13,13 @@ class AppButton extends StatelessWidget {
   final String title;
   final double? width;
   final bool color;
-  final Function? onTap;
+  final Function()? onTap;
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(5),
       child: InkWell(
-        onTap: onTap as void Function()?,
+        onTap: onTap,
         child: Container(
           height: 53,
           width: width,

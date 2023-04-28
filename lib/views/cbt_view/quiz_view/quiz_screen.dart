@@ -65,7 +65,7 @@ class QuizScreen extends StatelessWidget {
             SizedBox(height: 30),
             Center(child: AppText.heading2S("Starting in")),
             SizedBox(height: 25),
-            CountdownBox(),
+            //CountdownBox(),
             SizedBox(height: 15),
             Center(
                 child: AppButton(

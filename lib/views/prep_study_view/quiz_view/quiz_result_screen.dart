@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
+import 'package:prep50/views/home_view/home_view.dart';
 import 'package:prep50/views/prep_study_view/quiz_view/quiz_answer_screen.dart';
 import 'package:prep50/widgets/app_back_icon.dart';
 import 'package:prep50/widgets/app_button.dart';
@@ -133,7 +134,7 @@ class QUizResultScreen extends StatelessWidget {
               child: Column(
                 children: [
                   AppText.textField(
-                    "Keep Going, keep studying and we are so certain you would ace your nextr exams😇",
+                    "Keep Going, keep studying and we are so certain you would ace your next exams😇",
                     multiText: true,
                     centered: true,
                   ),
@@ -150,7 +151,7 @@ class QUizResultScreen extends StatelessWidget {
                     width: 110,
                     color: false,
                     onTap: (){
-                      Navigator.pop(context);
+                      Navigator.popUntil(context,ModalRoute.withName(HomeView.routeName));
                     },
                   ),
                   Spacer(),

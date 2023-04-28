@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:prep50/views/cbt_view/quiz_view/components/time_box.dart';
 
 class CountdownBox extends StatelessWidget {
-  // const CountdownBox({ Key key }) : super(key: key);
+  final Duration countDown;
+
+  const CountdownBox({Key? key,required this.countDown}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +20,7 @@ class CountdownBox extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                TimeBox(item: "00", time: "Days"),
+                TimeBox(item: "${countDown.inDays>=10?countDown.inDays:"0${countDown.inDays}"}", time: "Days"),
                 SizedBox(width: 8),
                 Column(
                   children: [
@@ -40,7 +44,7 @@ class CountdownBox extends StatelessWidget {
                   ],
                 ),
                 SizedBox(width: 8),
-                TimeBox(item: "00", time: "Hour"),
+                TimeBox(item: "${countDown.inHours>=10?countDown.inHours:"0${countDown.inHours}"}", time: "Hour"),
                 SizedBox(width: 8),
                 Column(
                   children: [
@@ -64,7 +68,7 @@ class CountdownBox extends StatelessWidget {
                   ],
                 ),
                 SizedBox(width: 8),
-                TimeBox(item: "00", time: "Minute"),
+                TimeBox(item: "${countDown.inMinutes>=10?countDown.inMinutes:"0${countDown.inMinutes}"}", time: "Minute"),
                 SizedBox(width: 8),
                 Column(
                   children: [
@@ -88,7 +92,7 @@ class CountdownBox extends StatelessWidget {
                   ],
                 ),
                 SizedBox(width: 8),
-                TimeBox(item: "00", time: "Second"),
+                TimeBox(item: "${countDown.inSeconds>=10?countDown.inSeconds:"0${countDown.inSeconds}"}", time: "Second"),
               ],
             ),
           ],

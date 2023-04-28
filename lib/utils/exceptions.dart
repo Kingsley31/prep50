@@ -7,3 +7,8 @@ class ValidationException implements Exception{
 
 
 }
+
+class WeeklyQuizException implements Exception{
+  String message;
+  WeeklyQuizException({required this.message});
+}
