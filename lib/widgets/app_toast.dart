@@ -32,6 +32,45 @@ class AppToast {
     );
   }
 
+  showReportSuccessToast() {
+    Widget toast = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15.0),
+        color: Colors.white,
+      ),
+      child:Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            height: 40,
+            width: 40,
+            child: Image.asset("assets/png/success_icon.png"),
+          ),
+          SizedBox(width: 5,),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText.heading6M("Report Sent Successfully"),
+                SizedBox(height: 5,),
+                AppText.captionTextS("Your reports have been sent successfully, kindly await our reviews and verdict",multiText: true,),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    //Show the toast message
+    fToast.showToast(
+      child: toast,
+      gravity: ToastGravity.TOP,
+      toastDuration: Duration(seconds: 10),
+    );
+  }
+
 
 
 

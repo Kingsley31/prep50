@@ -5,6 +5,7 @@ class AppTextField extends StatefulWidget {
 
   AppTextField({
     Key? key,
+    this.controller,
     required this.hText,
     this.showSuffixIcon: false,
     this.icons: false,
@@ -38,6 +39,7 @@ class AppTextField extends StatefulWidget {
   final bool showInfoTooltip;
   final String tooltipText;
   final String? errorText;
+  final TextEditingController? controller;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -48,11 +50,13 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: widget.showPrefixIcon?EdgeInsets.zero:widget.showSuffixIcon?EdgeInsets.zero:EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: widget.color ?? Color(0xffF7F7F7),
       ),
       child: TextFormField(
+        controller: widget.controller,
         maxLines: widget.maxLines,
         validator: widget.validator,
         obscureText: widget.obscureText,

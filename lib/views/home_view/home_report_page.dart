@@ -2,15 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:prep50/constants/text_style.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
+import 'package:prep50/view-models/report_screen_viewmodel.dart';
 import 'package:prep50/widgets/app_back_icon.dart';
 import 'package:prep50/widgets/app_button.dart';
 import 'package:prep50/widgets/app_text_field.dart';
+import 'package:prep50/widgets/app_toast.dart';
+import 'package:provider/provider.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
-class HomeReportScreen extends StatelessWidget {
-  const HomeReportScreen({Key? key, this.title}) : super(key: key);
-  final String? title;
+import '../../utils/exceptions.dart';
+
+class HomeReportScreen extends StatefulWidget {
+
+  const HomeReportScreen({Key? key,required this.title,required this.isFeed,this.slug,this.commentId}) : super(key: key);
+  final String title;
+  final String? slug;
+  final String? commentId;
+  final bool isFeed;
+
+  @override
+  State<HomeReportScreen> createState() => _HomeReportScreenState();
+}
+
+class _HomeReportScreenState extends State<HomeReportScreen> {
+  TextEditingController messageController = TextEditingController();
+  AppToast? appToast;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    appToast = AppToast(context: context);
+  }
+
   @override
   Widget build(BuildContext context) {
+    ReportScreenViewModel reportScreenViewModel = Provider.of<ReportScreenViewModel>(context,listen: false);
+    final ProgressDialog progressDialog = ProgressDialog(context:context);
     return Scaffold(
       backgroundColor: Color(0xffe5e5e5),
       body: ListView(
@@ -107,7 +135,7 @@ class HomeReportScreen extends StatelessWidget {
                             color: kMidBlackColor),
                         children: [
                           TextSpan(
-                            text: "$title",
+                            text: "${widget.title}",
                             style: textFieldRegularStyle.copyWith(
                               color: kPrimaryColor,
                               fontWeight: FontWeight.bold,
@@ -154,9 +182,18 @@ class HomeReportScreen extends StatelessWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 17),
-                    child: AppTextField(
-                      hText: "Enter your complaint...",
-                      maxLines: 10,
+                    child: Form(
+                      key: _formKey,
+                      child: AppTextField(
+                        controller: messageController,
+                        hText: "Enter your complaint...",
+                        maxLines: 10,
+                        validator: (value){
+                          if(value ==null || value!.isEmpty){
+                            return "Please enter a message";
+                          }
+                        },
+                      ),
                     ),
                   ),
                   SizedBox(height: 20),
@@ -175,6 +212,39 @@ class HomeReportScreen extends StatelessWidget {
                 color: true,
                 width: 343,
                 title: "Send Report",
+                onTap: ()async{
+                  if (_formKey.currentState!.validate()) {
+                      progressDialog.show(
+                      max: 100,
+                      msg: 'Sending Report...',
+                      msgColor: Colors.black,
+                      progressValueColor: kPrimaryColor,
+                      borderRadius: 10.0,
+                      backgroundColor: Colors.white,
+                      barrierDismissible: false,
+                      elevation: 10.0,
+                      );
+                      try{
+                        if(widget.isFeed){
+                          await reportScreenViewModel.reportFeed(widget.title, widget.slug!, messageController.text);
+                          progressDialog.close();
+                          Navigator.pop(context,true);
+                        }else{
+                          await reportScreenViewModel.reportComment(widget.title, widget.commentId!,messageController.text);
+                          progressDialog.close();
+                          Navigator.pop(context,true);
+                        }
+                      }on ValidationException catch(e){
+                        progressDialog.close();
+                        appToast?.showToast(message: e.message);
+                      }catch(e){
+                        progressDialog.close();
+                        appToast?.showToast(message: e.toString().substring(11));
+                      }
+
+
+                  }
+                },
               ),
             ),
           )
