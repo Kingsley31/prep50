@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prep50/utils/text.dart';
-import 'package:prep50/views/Notification_view/components/notification_widget.dart';
+import 'package:prep50/views/Notification_view/components/notification_card.dart';
 import 'package:prep50/widgets/app_back_icon.dart';
 
 class NotificationScreenNotEmpty extends StatelessWidget {
@@ -40,7 +40,7 @@ class NotificationScreenNotEmpty extends StatelessWidget {
               padding: EdgeInsets.all(0),
               itemCount: 10,
               itemBuilder: (context, index) =>
-                  index == 9 ? notMore() : NotificationWidget(),
+                  index == 9 ? notMore() : Container(),//NotificationCard(),
             ),
           ),
           // SizedBox(height: 20),

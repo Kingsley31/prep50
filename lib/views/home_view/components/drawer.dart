@@ -1,5 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/utils/text.dart';
@@ -10,6 +12,7 @@ import 'package:prep50/views/settings_view/security_screens/security_screen.dart
 import 'package:prep50/views/settings_view/support_view.dart/support_screen.dart';
 import 'package:prep50/widgets/app_button.dart';
 import 'package:provider/provider.dart';
+import 'package:prep50/models/user.dart';
 
 import '../../authentication_view/login_screen.dart';
 
@@ -18,6 +21,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context,listen: false);
     return Container(
       height: MediaQuery.of(context).size.height,
       padding: EdgeInsets.all(20),
@@ -28,22 +32,70 @@ class AppDrawer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipOval(
-                child: Container(
-                  height: 100,
-                  width: 100,
-                  child: Image.asset(
-                    "assets/image/img1.jpg",
-                    fit: BoxFit.cover,
-                  ),
+              Container(
+                height: 100,
+                width: 100,
+                child: FutureBuilder<User>(
+                  future: homeScreenViewModel.getLoggedInUser(),
+                  builder: (context,snapshot){
+                    if(snapshot.hasData && snapshot.data!=null){
+                      final User user = snapshot.data!;
+                      return user.photo.isNotEmpty?
+                      CircleAvatar(backgroundImage: NetworkImage("$BASE_URL/${user.photo}"),):
+                      CircleAvatar(backgroundImage: AssetImage("assets/png/dummy_avatar.png"),);
+                    }
+
+                    return Center(
+                      child: SizedBox(
+                        height: 20.0,
+                        width: 20.0,
+                        child: CircularProgressIndicator(
+                          color: kPrimaryColor,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               SizedBox(height: 10),
-              AppText.heading5M("@Sonofigma"),
+              FutureBuilder<User>(
+                  future: homeScreenViewModel.getLoggedInUser(),
+                  builder: (context,snapshot) {
+                  if(snapshot.hasData && snapshot.data!=null){
+                    return AppText.heading5M("@${snapshot.data?.username}",multiText: true,);
+                  }
+                  return Center(
+                    child: SizedBox(
+                      height: 20.0,
+                      width: 20.0,
+                      child: CircularProgressIndicator(
+                        color: kPrimaryColor,
+                      ),
+                    ),
+                  );
+                }
+              ),
               SizedBox(height: 5),
-              AppText.captionText(
-                "Steveuche404@gmail.com",
-                color: kMidBlackColor,
+              FutureBuilder<User>(
+                  future: homeScreenViewModel.getLoggedInUser(),
+                  builder: (context,snapshot) {
+                    if(snapshot.hasData && snapshot.data!=null){
+                      return AppText.captionText(
+                        "${snapshot.data?.email}",
+                        color: kMidBlackColor,
+                        multiText: true,
+                      );
+                    }
+                    return Center(
+                      child: SizedBox(
+                        height: 20.0,
+                        width: 20.0,
+                        child: CircularProgressIndicator(
+                          color: kPrimaryColor,
+                        ),
+                      ),
+                    );
+                }
               ),
               SizedBox(height: 10),
               AppButton(
@@ -51,8 +103,11 @@ class AppDrawer extends StatelessWidget {
                 color: true,
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => EditProfile()));
+                  PersistentNavBarNavigator.pushNewScreen(
+                    context,
+                    screen: EditProfile(),
+                    withNavBar: false, // OPTIONAL VALUE. True by default.
+                  );
                 },
               ),
               drawerItems(context, PrepsIcons.subscription, "Subscription"),
@@ -87,8 +142,11 @@ class AppDrawer extends StatelessWidget {
         }
         if (page != null) {
           Navigator.pop(context);
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => page));
+          PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: page,
+            withNavBar: false, // OPTIONAL VALUE. True by default.
+          );
           return;
         }
 

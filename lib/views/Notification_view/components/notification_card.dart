@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:prep50/models/notification_list_item.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
+import 'package:intl/intl.dart';
 
-class NotificationWidget extends StatelessWidget {
-  const NotificationWidget({Key? key}) : super(key: key);
+class NotificationCard extends StatelessWidget {
+  final NotificationListItem notificationListItem;
+  const NotificationCard({Key? key,required this.notificationListItem}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final notificatioDate = DateTime.parse(notificationListItem.createdAt);
     return Container(
       // height: 137,
       width: double.infinity,
@@ -17,7 +21,7 @@ class NotificationWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16),
             child: AppText.heading6(
-              "12th June 2021",
+              "${ DateFormat("dd MMMM y").format(notificatioDate)}",
               color: kMidGreyColor,
             ),
           ),
@@ -39,12 +43,10 @@ class NotificationWidget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppText.heading6S("Downtime alert"),
+                      AppText.heading6S("${notificationListItem.title}"),
                       SizedBox(height: 8),
                       AppText.textField(
-                        "We are sorry for the inconveniencies you are "
-                        "expereiencing due to the downtime we are having on the"
-                        " app, we pledge to resolve this as soon as we can. ",
+                        "${notificationListItem.body}",
                         multiText: true,
                         color: Color(0xff666666),
                       )

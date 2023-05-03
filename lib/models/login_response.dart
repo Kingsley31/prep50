@@ -11,4 +11,15 @@ class LoginResponse{
 
   LoginResponse({required this.user,required this.accessCode,required this.refreshToken});
 
+  LoginResponse.fromJson(Map<String,dynamic> json):
+      user = User.fromJson(json["user"]),
+      accessCode=json["access"],
+      refreshToken=json["refresh"];
+
+  toJson() => {
+    "access":accessCode,
+    "refresh":refreshToken,
+    "user":user.toJson()
+  };
+
 }

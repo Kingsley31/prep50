@@ -33,8 +33,10 @@ class CreateAccountViewModel extends ChangeNotifier{
     final LoginResponse loginResponse = await _authService.registerUser(_username, _email, _phone, _password);
     final User user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
+    final String refreshToken = loginResponse.refreshToken;
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
+    await _appData.saveApiRefreshToken(refreshToken);
     await _appData.setUserLoginStatus(true,AppData.loginTypePassword);
     await _appData.setRegistrationCompleted(false);
     return user;

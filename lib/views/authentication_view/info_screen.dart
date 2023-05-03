@@ -1,11 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:prep50/models/exam_board.dart';
 import 'package:prep50/models/subject.dart';
 import 'package:prep50/utils/color.dart';
-import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/info-screen-view-model.dart';
 import 'package:prep50/views/authentication_view/welcome_screen.dart';

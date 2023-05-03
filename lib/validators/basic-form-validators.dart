@@ -12,6 +12,13 @@ String? nameValidator(String? name){
    return null;
  }
 
+String? addressValidator(String? address){
+  if(address==null || address.isEmpty){
+    return "Please enter a valid address";
+  }
+  return null;
+}
+
 String? phoneNumberValidator(String? phoneNumber){
   String patttern = r'(^(?:[+0]9)?[0-9]{10,12}$)';
   RegExp regExp = new RegExp(patttern);

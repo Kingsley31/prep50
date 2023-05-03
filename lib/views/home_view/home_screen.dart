@@ -7,7 +7,6 @@ import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/exceptions.dart';
 import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/utils/text.dart';
-import 'package:prep50/views/Notification_view/notification_screen_not_empty.dart';
 import 'package:prep50/views/home_view/components/filter_dialog.dart';
 import 'package:prep50/views/home_view/components/report_dialog.dart';
 import 'package:prep50/views/home_view/single_feed_screen.dart';
@@ -19,14 +18,10 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../view-models/home_screen_view_model.dart';
 import '../../view-models/news_feed_list_screen_viewmodel.dart';
+import '../Notification_view/notification_screen.dart';
 import 'components/drawer.dart';
 import 'components/feed_card.dart';
-// import 'package:prep50/views/quiz_view/components/countdown_box.dart';
-// import 'package:prep50/views/quiz_view/quiz_screen2.dart';
-// import 'package:prep50/views/quiz_view/components/time_box.dart';
-// import 'package:prep50/widgets/question_box.dart';
-// import 'package:prep50/widgets/app_button.dart';
-// import 'package:prep50/views/quiz_view/components/selection_button.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -115,10 +110,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Spacer(),
                       GestureDetector(
-                        onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    NotificationScreenNotEmpty())),
+                        onTap: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: NotificationScreen(),
+                            withNavBar: false, // OPTIONAL VALUE. True by default.
+                          );
+                        },
                         child: Container(
                           height: 40,
                           width: 40,

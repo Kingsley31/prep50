@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/view-models/create_account_screen_viewmodel.dart';
+import 'package:prep50/view-models/edit_profile_screen_viewmodel.dart';
 import 'package:prep50/view-models/home_screen_view_model.dart';
 import 'package:prep50/view-models/join_quiz_screen_viewmodel.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
 import 'package:prep50/view-models/news_feed_list_screen_viewmodel.dart';
+import 'package:prep50/view-models/notifications_screen_viewmodel.dart';
 import 'package:prep50/view-models/password_reset_screen_viewmodel.dart';
 import 'package:prep50/view-models/podcast_screen_viewmodel.dart';
 import 'package:prep50/view-models/podcast_topic_screen_viewmodel.dart';
@@ -50,7 +52,9 @@ void main() async{
             ChangeNotifierProvider(create: (create) => WeeklyQuizLeaderBoardScreenViewModel()),
             ChangeNotifierProvider(create: (create) => NewsFeedListScreenViewModel()),
             ChangeNotifierProvider(create: (create) => ReportScreenViewModel()),
-            ChangeNotifierProvider(create: (create) => SingleFeedScreenViewModel())
+            ChangeNotifierProvider(create: (create) => SingleFeedScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=> NotificationsScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=> EditProfileScreenViewModel())
           ],
           child: MyApp()
       )

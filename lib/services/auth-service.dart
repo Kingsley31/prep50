@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:prep50/models/login_response.dart';
 import 'package:prep50/utils/exceptions.dart';
 import '../constants/string_data.dart';
 import '../models/user.dart';
+import 'package:http_parser/http_parser.dart';
 
 class AuthService{
   final String baseUrl = BASE_URL;
@@ -62,10 +63,8 @@ class AuthService{
 
     if (response.statusCode == 200) {
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
-      String accessCode = jsonResponse["data"]["access"];
-      String refreshToken = jsonResponse["data"]["refresh"];
-      User user  = User.fromJson(jsonResponse["data"]["user"]);
-      LoginResponse loginResponse = LoginResponse(user: user, accessCode: accessCode, refreshToken: refreshToken);
+      print(jsonResponse["data"]["user"]);
+      LoginResponse loginResponse = LoginResponse.fromJson(jsonResponse["data"]);
       return loginResponse;
     }else if(response.statusCode == 400 || response.statusCode == 401 || response.statusCode == 403){
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
@@ -98,10 +97,7 @@ class AuthService{
 
     if (response.statusCode == 200) {
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
-      String accessCode = jsonResponse["data"]["access"];
-      String refreshToken = jsonResponse["data"]["refresh"];
-      User user  = User.fromJson(jsonResponse["data"]["user"]);
-      LoginResponse loginResponse = LoginResponse(user: user, accessCode: accessCode, refreshToken: refreshToken);
+      LoginResponse loginResponse = LoginResponse.fromJson(jsonResponse["data"]);
       return loginResponse;
     }else if(response.statusCode == 400){
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
@@ -140,10 +136,7 @@ class AuthService{
 
     if (response.statusCode == 200) {
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
-      String accessCode = jsonResponse["data"]["access"];
-      String refreshToken = jsonResponse["data"]["refresh"];
-      User user  = User.fromJson(jsonResponse["data"]["user"]);
-      LoginResponse loginResponse = LoginResponse(user: user, accessCode: accessCode, refreshToken: refreshToken);
+      LoginResponse loginResponse = LoginResponse.fromJson(jsonResponse["data"]);
       return loginResponse;
     }else if(response.statusCode == 400){
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
@@ -228,8 +221,8 @@ class AuthService{
   }
 
 
-  Future<Map<String,dynamic>> getUserDetails(String accessToken) async {
-    final String userDetailsEndpoint="/user";
+  Future<User> getUserDetails(String accessToken) async {
+    final String userDetailsEndpoint="/user/profile";
     final response = await http.get(
       Uri.parse('$baseUrl$userDetailsEndpoint'),
       headers: <String, String>{
@@ -240,17 +233,74 @@ class AuthService{
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response, then parse the JSON.
       final jsonResponse = jsonDecode(response.body);
-      if(jsonResponse['status']=="success"){
-        print(jsonResponse);
-        return jsonResponse;
-      }else if(jsonResponse['status']=="failed"){
-        throw Exception(jsonResponse['error'][0]);
-      }else{
-          throw Exception('Failed to load user details.');
-      }
+      final userJson = jsonResponse['data'];
+      User user = User.fromJson(userJson);
+      return user;
     } else {
       // If the server did not return a 200 OK response, then throw an exception.
-      throw Exception('Failed to load user details.');
+      throw ValidationException(message: 'Failed to load user details.',errors: []);
+    }
+  }
+
+  Future<LoginResponse> updateUserProfile({
+    required String accessCode,
+    required String phone,
+    required String address,
+    required String gender,
+    required String photo})async{
+      final String userProfileUpdateEndpoint="/user/profile";
+      final response = await http.put(
+        Uri.parse('$baseUrl$userProfileUpdateEndpoint'),
+        headers: <String, String>{
+          'Authorization': 'Bearer $accessCode',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "phone":phone,
+          "address":address,
+          "gender":gender,
+          'photo':photo
+        })
+      );
+
+      if (response.statusCode == 200) {
+        // If the server did return a 200 OK response, then parse the JSON.
+        final jsonResponse = jsonDecode(response.body);
+        if(jsonResponse['status'] == "success"){
+          print(jsonResponse["data"]);
+          LoginResponse loginResponse = LoginResponse.fromJson(jsonResponse["data"]);
+          return loginResponse;
+        }
+        throw ValidationException(message: jsonResponse['message'],errors: []);
+      } else {
+        // If the server did not return a 200 OK response, then throw an exception.
+        throw ValidationException(message: 'Failed to load user details, is the device online?',errors: []);
+      }
+  }
+
+  Future<Map<String,dynamic>> uploadUserProfilePicture({
+    required String accessCode,
+    required File imageFile
+  })async{
+    String photoUploadEndpoint = "/user/profile";
+    http.MultipartRequest request = http.MultipartRequest("POST",Uri.parse('$baseUrl$photoUploadEndpoint'));
+    request.headers.addAll(<String, String>{
+      'Authorization': 'Bearer $accessCode',
+      'Content-Type': 'application/json',
+    });
+    print(imageFile.path.split('/').last);
+    request.files.add(await http.MultipartFile.fromPath("photo", imageFile.path,contentType: MediaType('image', '${imageFile.path.split('.').last.toLowerCase()}')));
+    http.StreamedResponse response = await request.send();
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(await response.stream.bytesToString());
+      if(jsonResponse['status'] == "success"){
+        return jsonResponse;
+      }
+      print(jsonResponse['message']);
+      throw ValidationException(message: jsonResponse['message'],errors: []);
+    }else {
+      // If the server did not return a 200 OK response, then throw an exception.
+      throw ValidationException(message: 'Failed to upload user photo, is the device online?',errors: []);
     }
   }
 
