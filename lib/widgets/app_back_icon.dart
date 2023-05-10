@@ -3,7 +3,8 @@ import 'package:prep50/utils/color.dart';
 
 class AppBackIcon extends StatelessWidget {
   final Function()? onTap;
-  const AppBackIcon({Key? key,this.onTap}) : super(key: key);
+  final bool reverseColor;
+  const AppBackIcon({Key? key,this.onTap,this.reverseColor=false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +13,10 @@ class AppBackIcon extends StatelessWidget {
       child: Container(
         height: 22,
         width: 22,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: kPrimaryColor),
+        decoration: BoxDecoration(shape: BoxShape.circle, color:reverseColor?Colors.white: kPrimaryColor),
         child: Icon(
           Icons.arrow_back_ios_rounded,
-          color: Color(0xffffffff),
+          color: reverseColor?kPrimaryColor:Color(0xffffffff),
           size: 15,
         ),
       ),

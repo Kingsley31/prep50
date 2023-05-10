@@ -67,6 +67,27 @@ class AppData {
     return prefs.getString("api_token");
   }
 
+  setSmartLock(bool enabled)async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("smart_lock", enabled);
+  }
+
+  Future<bool> getSmartLockEnabled()async{
+    final prefs = await SharedPreferences.getInstance();
+    bool? enabled= prefs.getBool("smart_lock");
+    return enabled==null?false:enabled!;
+  }
+
+  setLoginPassword(String password)async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("login_password", password);
+  }
+
+  Future<String?> getLoginPassword()async{
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("login_password");
+  }
+
   saveApiRefreshToken(String refreshToken) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("api_refresh_token", refreshToken);
@@ -91,6 +112,26 @@ class AppData {
     print(topicsString);
     List<PodcastTopic> topics =  json.decode(topicsString).map<PodcastTopic>((topiJson) => PodcastTopic.fromJson(topiJson)).toList();
     return topics;
+  }
+
+ Future<bool> getFingerPrintEnable() async{
+   final prefs = await SharedPreferences.getInstance();
+   return prefs.getBool("fingerprint_enabled")??false;
+ }
+
+  setFingerPrintEnabled(bool enabled) async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("fingerprint_enabled", enabled);
+  }
+
+  setLoginUsername(String username)async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("login_username", username);
+  }
+
+  Future<String> getLoginUsername()async{
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("login_username")??"";
   }
 
 }

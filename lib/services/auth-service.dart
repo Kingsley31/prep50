@@ -324,4 +324,73 @@ class AuthService{
     }
   }
 
+  Future<Map<String,dynamic>> updateUserSelectedSubjects(String examBoard,String action,Set<int> selectedSubjects,String accessToken) async {
+    final String updateEndpoint = "/user/subjects";
+    print(selectedSubjects.toString());
+    print(accessToken);
+    final response = await http.put(
+      Uri.parse('$baseUrl$updateEndpoint'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, dynamic>{
+        examBoard:{
+          "action":action,
+          "id":selectedSubjects.toList()
+        },
+      }),
+    );
+    print(response.body);
+    if (response.statusCode == 200) {
+      final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
+      if(jsonResponse['status']=="success"){
+        print(jsonResponse);
+        return jsonResponse;
+      }else if(jsonResponse['status']=="failed"){
+        throw ValidationException(message:jsonResponse['message'],errors:[]);
+      }else{
+        throw ValidationException(message:'Failed to update user.',errors:[]);
+      }
+    }else {
+      // If the server did not return a 200 OK response, then throw an exception.
+      //print("The error is here");
+      throw ValidationException(message:'Failed to update user.',errors:[]);
+    }
+  }
+
+  Future<Map<String,dynamic>> changeUserPassword(String accessCode, String oldPassword, String newPassword) async{
+    String changePasswordEndpoint = "/user/change-password";
+    final response = await http.post(
+      Uri.parse('$baseUrl$changePasswordEndpoint'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessCode',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "old_password":oldPassword,
+        "password":newPassword
+      }),
+    );
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
+        print(jsonResponse);
+        return jsonResponse;
+    }else if(response.statusCode==400){
+      final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
+      if(jsonResponse['status']=="failed" && jsonResponse.containsKey("error")){
+        throw ValidationException(message:jsonResponse['error']["password"],errors:[]);
+      }else{
+        throw ValidationException(message:jsonResponse['message'],errors:[]);
+      }
+    }else {
+      // If the server did not return a 200 OK response, then throw an exception.
+      //print("The error is here");
+      throw ValidationException(message:'Failed to update password, is the device online?.',errors:[]);
+    }
+
+  }
+
 }

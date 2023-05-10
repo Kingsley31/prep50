@@ -17,6 +17,11 @@ class InfoScreenViewModel extends ChangeNotifier{
   final Set<int> _selectedSubjectIds = {};
   ExamBoard? _selectedExamBoard;
   List<ExamBoard> _examBoardList = [];
+  String _selectedExamBoardDialogString ="";
+
+  String get selectedExamBoardDialogString{
+    return _selectedExamBoardDialogString;
+  }
 
   set setExamBoardList(List<ExamBoard> examBoards){
     _examBoardList = examBoards;
@@ -35,6 +40,11 @@ class InfoScreenViewModel extends ChangeNotifier{
   }
   set setSelectedExamBoard(ExamBoard examBoard){
     _selectedExamBoard = examBoard;
+    notifyListeners();
+  }
+
+  set setSelectedExamBoardDialogString(String selectedExamBoardDialogString){
+    _selectedExamBoardDialogString = selectedExamBoardDialogString;
     notifyListeners();
   }
 

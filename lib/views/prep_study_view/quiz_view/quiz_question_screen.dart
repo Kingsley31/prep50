@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/models/objective.dart';
 import 'package:prep50/utils/color.dart';
@@ -215,19 +216,19 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                 child: Column(
                   children: [
                     quizQuestionScreenViewModel.currentQuestion.questionDetails.isNotEmpty?Center(
-                      child: AppText.textFieldS(
-                        "${quizQuestionScreenViewModel.currentQuestion.questionDetails} \n\n",
-                        centered: true,
-                        multiText: true,
-                        color: Colors.white,
+                      child: Html(
+                        data:"${quizQuestionScreenViewModel.currentQuestion.questionDetails} \n\n",
+                        style:{
+                          "*":Style(color: Colors.white),
+                        },
                       ),
                     ):Container(),
                     Center(
-                      child: AppText.textFieldS(
-                        quizQuestionScreenViewModel.currentQuestion.question,
-                        centered: true,
-                        multiText: true,
-                        color: Colors.white,
+                      child: Html(
+                        data:quizQuestionScreenViewModel.currentQuestion.question,
+                        style:{
+                          "*":Style(color: Colors.white),
+                        },
                       ),
                     ),
                     quizQuestionScreenViewModel.currentQuestion.questionImage.isNotEmpty?SizedBox(height: 20,):Container(),

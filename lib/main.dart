@@ -1,8 +1,16 @@
+import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:local_session_timeout/local_session_timeout.dart';
 import 'package:prep50/utils/color.dart';
+import 'package:prep50/utils/pushnotification_utils.dart';
+import 'package:prep50/view-models/change_password_screen_viewmodel.dart';
 import 'package:prep50/view-models/create_account_screen_viewmodel.dart';
 import 'package:prep50/view-models/edit_profile_screen_viewmodel.dart';
+import 'package:prep50/view-models/examboard_bottom_sheet_viewmodel.dart';
+import 'package:prep50/view-models/faq_screen_viewmodel.dart';
 import 'package:prep50/view-models/home_screen_view_model.dart';
 import 'package:prep50/view-models/join_quiz_screen_viewmodel.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
@@ -14,13 +22,19 @@ import 'package:prep50/view-models/podcast_topic_screen_viewmodel.dart';
 import 'package:prep50/view-models/prep-study-subjects-viewmodel.dart';
 import 'package:prep50/view-models/quiz-question-screen-viewmodel.dart';
 import 'package:prep50/view-models/report_screen_viewmodel.dart';
+import 'package:prep50/view-models/security_and_privacy_screen_viewmodel.dart';
 import 'package:prep50/view-models/single_feed_screen_viewmodel.dart';
 import 'package:prep50/view-models/study-screen-viewmodel.dart';
+import 'package:prep50/view-models/subject_reselection_screen_viewmodel.dart';
+import 'package:prep50/view-models/support_screen_viewmodel.dart';
+import 'package:prep50/view-models/terms_of_service_screen_viewmodel.dart';
 import 'package:prep50/view-models/topic_screen_viewmodel.dart';
 import 'package:prep50/view-models/weekly_quiz_leader_board_screen_viewmodel.dart';
 import 'package:prep50/view-models/weekly_quiz_question_screen_viewmodel.dart';
 import 'package:prep50/view-models/welcome-screen-viewmodel.dart';
 import 'package:prep50/view-models/info-screen-view-model.dart';
+import 'package:prep50/views/Notification_view/notification_screen.dart';
+import 'package:prep50/views/authentication_view/login_screen.dart';
 import 'package:prep50/views/onboarding%20view/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -31,7 +45,7 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   runApp(
       MultiProvider(
           providers: [
@@ -54,7 +68,14 @@ void main() async{
             ChangeNotifierProvider(create: (create) => ReportScreenViewModel()),
             ChangeNotifierProvider(create: (create) => SingleFeedScreenViewModel()),
             ChangeNotifierProvider(create: (create)=> NotificationsScreenViewModel()),
-            ChangeNotifierProvider(create: (create)=> EditProfileScreenViewModel())
+            ChangeNotifierProvider(create: (create)=> EditProfileScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=> SupportScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => FaqScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=>TermsOfServiceScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=>SubjectReselectionScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=> SecurityAndPrivacyScreenViewModel()),
+            ChangeNotifierProvider(create: (create)=>ChangePasswordScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => ExamBoardBottomSheetViewModel())
           ],
           child: MyApp()
       )
@@ -62,119 +83,102 @@ void main() async{
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+  final sessionConfig = SessionConfig(
+      invalidateSessionForAppLostFocus: const Duration(seconds: 15),
+      invalidateSessionForUserInactivity: const Duration(seconds: 30));
+
+  Future<void> setupInteractedMessage(context) async {
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+    await FirebaseMessaging.instance.getInitialMessage();
+
+    // If the message also contains a data property with a "type" of "chat",
+    // navigate to a chat screen
+    if (initialMessage != null) {
+      _handleMessage(initialMessage,context);
+    }
+
+    // Also handle any interaction when the app is in the background via a
+    // Stream listener
+    FirebaseMessaging.onMessageOpenedApp.listen((message){
+      _handleMessage(message,context);
+    });
+  }
+
+  void _handleMessage(RemoteMessage message,context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> NotificationScreen()));
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: kPrimaryColor,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: AppBarTheme(
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: kPrimaryColor
+    _listenForSessionTimeOut(context);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp)async {
+      requestPushNotificationPermissionOnIos();
+      setupInteractedMessage(context);
+    });
+    listenForForegroundFcmMessages();
+    return SessionTimeoutManager(
+      sessionConfig: sessionConfig,
+      child: MaterialApp(
+        title: 'Prep50',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          // This is the theme of your application.
+          //
+          // Try running your application with "flutter run". You'll see the
+          // application has a blue toolbar. Then, without quitting the app, try
+          // changing the primarySwatch below to Colors.green and then invoke
+          // "hot reload" (press "r" in the console where you ran "flutter run",
+          // or simply save your changes to "hot reload" in a Flutter IDE).
+          // Notice that the counter didn't reset back to zero; the application
+          // is not restarted.
+          primarySwatch: kPrimaryColor,
+          // This makes the visual density adapt to the platform that you run
+          // the app on. For desktop platforms, the controls will be smaller and
+          // closer together (more dense) than on mobile platforms.
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          appBarTheme: AppBarTheme(
+            systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: kPrimaryColor
+            )
           )
-        )
+        ),
+        home: SplashScreen(),
       ),
-      home: SplashScreen(),
     );
   }
+
+  void _listenForSessionTimeOut(context) async{
+    SecurityAndPrivacyScreenViewModel securityAndPrivacyScreenViewModel=Provider.of<SecurityAndPrivacyScreenViewModel>(context,listen: false);
+    HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context,listen: false);
+    bool userIsLoggedIn =  await homeScreenViewModel.userIsLoggedIn;
+    if(userIsLoggedIn==false) return;
+    bool smartLockEnabled = await securityAndPrivacyScreenViewModel.getSmartLockEnable();
+    if(smartLockEnabled==false) return;
+    sessionConfig.stream.listen((SessionTimeoutState timeoutEvent)async {
+      if (timeoutEvent == SessionTimeoutState.userInactivityTimeout) {
+        try{
+          await homeScreenViewModel.logoutUser();
+          Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (context) => LoginScreen()));
+        }catch(e){}
+
+      } else if (timeoutEvent == SessionTimeoutState.appFocusTimeout) {
+        try{
+          await homeScreenViewModel.logoutUser();
+          Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (context) => LoginScreen()));
+        }catch(e){}
+      }
+    });
+  }
+
+
+
 }
 
-// class MyHomePage extends StatefulWidget {
-//   MyHomePage({Key key, this.title}) : super(key: key);
-
-//   // This widget is the home page of your application. It is stateful, meaning
-//   // that it has a State object (defined below) that contains fields that affect
-//   // how it looks.
-
-//   // This class is the configuration for the state. It holds the values (in this
-//   // case the title) provided by the parent (in this case the App widget) and
-//   // used by the build method of the State. Fields in a Widget subclass are
-//   // always marked "final".
-
-//   final String title;
-
-//   @override
-//   _MyHomePageState createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   int _counter = 0;
-
-//   void _incrementCounter() {
-//     setState(() {
-//       // This call to setState tells the Flutter framework that something has
-//       // changed in this State, which causes it to rerun the build method below
-//       // so that the display can reflect the updated values. If we changed
-//       // _counter without calling setState(), then the build method would not be
-//       // called again, and so nothing would appear to happen.
-//       _counter++;
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // This method is rerun every time setState is called, for instance as done
-//     // by the _incrementCounter method above.
-//     //
-//     // The Flutter framework has been optimized to make rerunning build methods
-//     // fast, so that you can just rebuild anything that needs updating rather
-//     // than having to individually change instances of widgets.
-//     return Scaffold(
-//       appBar: AppBar(
-//         // Here we take the value from the MyHomePage object that was created by
-//         // the App.build method, and use it to set our appbar title.
-//         title: Text(widget.title),
-//       ),
-//       body: Center(
-//         // Center is a layout widget. It takes a single child and positions it
-//         // in the middle of the parent.
-//         child: Column(
-//           // Column is also a layout widget. It takes a list of children and
-//           // arranges them vertically. By default, it sizes itself to fit its
-//           // children horizontally, and tries to be as tall as its parent.
-//           //
-//           // Invoke "debug painting" (press "p" in the console, choose the
-//           // "Toggle Debug Paint" action from the Flutter Inspector in Android
-//           // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-//           // to see the wireframe for each widget.
-//           //
-//           // Column has various properties to control how it sizes itself and
-//           // how it positions its children. Here we use mainAxisAlignment to
-//           // center the children vertically; the main axis here is the vertical
-//           // axis because Columns are vertical (the cross axis would be
-//           // horizontal).
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             Text(
-//               'You have pushed the button this many times:',
-//             ),
-//             Text(
-//               '$_counter',
-//               style: Theme.of(context).textTheme.headline4,
-//             ),
-//           ],
-//         ),
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _incrementCounter,
-//         tooltip: 'Increment',
-//         child: Icon(Icons.add),
-//       ), // This trailing comma makes auto-formatting nicer for build methods.
-//     );
-//   }
-// }

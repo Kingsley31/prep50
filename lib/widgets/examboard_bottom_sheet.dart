@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../utils/color.dart';
 import '../utils/preps_icons_icons.dart';
 import '../utils/text.dart';
+import '../view-models/examboard_bottom_sheet_viewmodel.dart';
 import '../view-models/info-screen-view-model.dart';
 import 'app_button.dart';
 
@@ -61,93 +62,118 @@ class _ExamBoardsBottomSheetState extends State<ExamBoardsBottomSheet> {
     super.initState();
     fToast = FToast();
     fToast?.init(context);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ExamBoardBottomSheetViewModel examBoardBottomSheetViewModel=Provider.of<ExamBoardBottomSheetViewModel>(context,listen: false);
+      examBoardBottomSheetViewModel.loadExamBoard();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      children:[
-        Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              )),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child:FutureBuilder<List<ExamBoard>>(
-                future:Provider.of<InfoScreenViewModel>(context, listen: false).getAllExamBoards(),
-                builder: (context,AsyncSnapshot<List<ExamBoard>> snapshot){
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasError) {
-                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                        _showToast(message: "${snapshot.error}");
-                      });
-                      log("${snapshot.error}");
-                      return Center(
-                              child:AppButton(
-                                title: "Load Exam Boards",
-                                width: 197,
-                                color: true,
-                                onTap: () => {
-                                  setState(() {})
-                                },
-                              ),
-                            );
-                    }
+    return Wrap(children: [
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            )),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Consumer<ExamBoardBottomSheetViewModel>(
+              builder: (context,examBoardBottomSheetViewModel,child) {
 
-                    if(snapshot.hasData) {
-                      List<ExamBoard> examBoardsList = snapshot.data==null ? []:snapshot.data!;
-                      InfoScreenViewModel infoScreenViewModel = Provider.of<InfoScreenViewModel>(context, listen: false);
-                      infoScreenViewModel.setExamBoardList=examBoardsList;
-                      List<String> examBoardsStringList = examBoardsList.map((examBoard) => examBoard.name).toList();
-                      selectedExamBoard=examBoardsStringList.first;
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          SizedBox(height: 10,),
-                          AppText.captionTextM("Select Examination Board"),
-                          SizedBox(height: 10,),
-                          AppText.textField("The examination board you select would help us filter through subjects that relates to your syllabus",multiText: true,centered: true,),
-                          SizedBox(height: 10,),
-                          DropdownButton(
-                              icon: Icon(Icons.arrow_drop_down),
-                              value: selectedExamBoard,
-                              items: examBoardsStringList.map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Row(
-                                    children: [
-                                      Icon(PrepsIcons.circle),
-                                      Text(value),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value){
-                                selectedExamBoard = value.toString();
-                              }
-                          ),
-                          SizedBox(height: 10,),
-                          AppButton(
-                            title: "Continue",
-                            color: true,
-                            width: 150,
-                            onTap: () => Navigator.pop(context,selectedExamBoard),
-                          ),
-                        ],
-                      );
-                    }
+                  if (examBoardBottomSheetViewModel.errorMessage.isNotEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      _showToast(message: "${examBoardBottomSheetViewModel.errorMessage}");
+                    });
+                    log("${examBoardBottomSheetViewModel.errorMessage}");
+                    return Center(
+                      child: AppButton(
+                        title: "Load Exam Boards",
+                        width: 197,
+                        color: true,
+                        onTap: () => {examBoardBottomSheetViewModel.loadExamBoard()},
+                      ),
+                    );
                   }
-                  return Center(
-                    child: SizedBox(width:30,height: 30,child: CircularProgressIndicator(color: kPrimaryColor,)),
-                  );
-                }
-            ),
-          ),
+
+                  if (examBoardBottomSheetViewModel.isLoadingExamBoard==false) {
+                    List<ExamBoard> examBoardsList = examBoardBottomSheetViewModel.examBoardList;
+                    InfoScreenViewModel infoScreenViewModel =
+                        Provider.of<InfoScreenViewModel>(context,
+                            listen: false);
+                    infoScreenViewModel.setExamBoardList = examBoardsList;
+                    List<String> examBoardsStringList = examBoardsList
+                        .map((examBoard) => examBoard.name)
+                        .toList();
+
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(
+                          height: 10,
+                        ),
+                        AppText.captionTextM("Select Examination Board"),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        AppText.textField(
+                          "The examination board you select would help us filter through subjects that relates to your syllabus",
+                          multiText: true,
+                          centered: true,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        DropdownButton(
+                            icon: Icon(Icons.arrow_drop_down),
+                            value: selectedExamBoard.isNotEmpty?selectedExamBoard:examBoardsStringList.first,
+                            items: examBoardsStringList
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Row(
+                                  children: [
+                                    Icon(PrepsIcons.circle),
+                                    Text(value),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              print(value);
+                              setState(() {
+                                selectedExamBoard = value.toString();
+                              });
+
+                            }),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        AppButton(
+                          title: "Continue",
+                          color: true,
+                          width: 150,
+                          onTap: () {
+                              Navigator.pop(context, selectedExamBoard);
+                          },
+                        ),
+                      ],
+                    );
+                  }
+
+                return Center(
+                  child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(
+                        color: kPrimaryColor,
+                      )),
+                );
+              }),
         ),
-      ]
-    );
+      ),
+    ]);
   }
 }

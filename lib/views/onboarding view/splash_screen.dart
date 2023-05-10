@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(
               height: 8,
             ),
-            SafeArea(top: false, child: AppText.captionTextS("2021"))
+            SafeArea(top: false, child: AppText.captionTextS("2023"))
           ],
         ),
       ),

@@ -60,10 +60,20 @@ dependencies:
   share_plus: ^6.3.4
   intl: ^0.17.0
   image_picker: ^0.8.7+4
+  local_auth: ^2.1.6
+  local_session_timeout: ^2.3.0
+  flutter_native_splash: ^2.0.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/png/splashscreen_logo.png
+  android_12:
+    color: "#FFFFFF"
+    image: assets/png/splashscreen_logo.png
 
 dependency_overrides:
   modal_bottom_sheet:

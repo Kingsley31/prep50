@@ -6,15 +6,17 @@ import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/home_screen_view_model.dart';
+import 'package:prep50/views/home_view/components/logout_dialog.dart';
 import 'package:prep50/views/profile/edit_profile.dart';
-import 'package:prep50/views/settings_view/referral_screen.dart';
-import 'package:prep50/views/settings_view/security_screens/security_screen.dart';
-import 'package:prep50/views/settings_view/support_view.dart/support_screen.dart';
+import 'package:prep50/views/referral_screen.dart';
+import 'package:prep50/views/subject_reselection_screen.dart';
+import 'package:prep50/views/terms_of_service_screen.dart';
 import 'package:prep50/widgets/app_button.dart';
 import 'package:provider/provider.dart';
 import 'package:prep50/models/user.dart';
 
-import '../../authentication_view/login_screen.dart';
+import '../../settings_view/security_and_privacy_screen.dart';
+import '../../support_view.dart/support_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -112,13 +114,13 @@ class AppDrawer extends StatelessWidget {
               ),
               drawerItems(context, PrepsIcons.subscription, "Subscription"),
               drawerItems(context, PrepsIcons.security, "Security & Privacy",
-                  page: SecurityScreen()),
-              drawerItems(context, PrepsIcons.subject, "Subjects Re-selection"),
+                  page: SecurityAndPrivacyScreen()),
+              drawerItems(context, PrepsIcons.subject, "Subjects Re-selection",page: SubjectsReselectScreen()),
               drawerItems(context, PrepsIcons.refer, "Refer",
-                  page: ReferralView()),
+                  page: ReferralScreen()),
               drawerItems(context, PrepsIcons.support, "Support",
                   page: SupportScreen()),
-              drawerItems(context, PrepsIcons.bookmark, "Terms of service"),
+              drawerItems(context, PrepsIcons.bookmark, "Terms of service",page: TermsOfServiceScreen()),
               drawerItems(context, PrepsIcons.logout, "Logout"),
             ],
           ),
@@ -132,12 +134,15 @@ class AppDrawer extends StatelessWidget {
     return InkWell(
       onTap: () async {
         if(page == null ){
-          HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context, listen: false);
-          try{
-            await homeScreenViewModel.logoutUser();
-            Navigator.pop(context);
-            //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
-          }catch(e){}
+          final bool logout = await LogoutDialog.show(context)??false;
+          if(logout){
+            HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context, listen: false);
+            try{
+              await homeScreenViewModel.logoutUser(disableSettings: true);
+              Navigator.pop(context);
+              //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
+            }catch(e){}
+          }
 
         }
         if (page != null) {

@@ -1,20 +1,38 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:prep50/models/login_response.dart';
 import 'package:prep50/services/auth-service.dart';
+import 'package:prep50/services/notification_service.dart';
 import 'package:prep50/storage/app_data.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:prep50/utils/device_utils.dart';
 import 'package:prep50/models/user.dart' as appModel;
+import 'package:prep50/utils/pushnotification_utils.dart';
 
 class LoginScreenViewModel extends ChangeNotifier{
   AuthService _authService = AuthService();
+  NotificationService _notificationService = NotificationService();
   AppData _appData = AppData();
   String _username = "";
   String _password = "";
+  final LocalAuthentication _auth = LocalAuthentication();
 
+
+  Future<bool> get fingerPrintAuthEnabled async{
+    return await _appData.getFingerPrintEnable();
+  }
+
+  Future<String> get loginPassword async{
+    return await _appData.getLoginPassword()??"";
+  }
+
+  Future<String> get loginUsername async{
+    return await _appData.getLoginUsername()??"";
+  }
 
   Future<bool> get userIsLoggedIn async{
     return await _appData.getUserLoginStatus();
@@ -32,6 +50,18 @@ class LoginScreenViewModel extends ChangeNotifier{
     _password = password;
   }
 
+  Future<bool> authenticateWithFingerPrint()async{
+    try {
+      final bool didAuthenticate = await _auth.authenticate(
+          localizedReason: 'Please authenticate to access your dashboard',
+          options: AuthenticationOptions(biometricOnly: true)
+      );
+      return didAuthenticate;
+    } on PlatformException {
+      return false;
+    }
+  }
+
   Future<LoginResponse> loginUser() async {
     String deviceId = await getCurrentDeviceId();
     String deviceName = await getCurrentDeviceName();
@@ -40,10 +70,14 @@ class LoginScreenViewModel extends ChangeNotifier{
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
+    final fcmToken = await getDeviceToken();
+    await _notificationService.registerDeviceToken(accessCode: accessToken, token: fcmToken);
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);
     await _appData.setUserLoginStatus(true,AppData.loginTypePassword);
+    await _appData.setLoginPassword(_password);
+    await _appData.setLoginUsername(_username);
     //await _appData.setRegistrationCompleted(false);
     return loginResponse;
   }
@@ -107,6 +141,8 @@ class LoginScreenViewModel extends ChangeNotifier{
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
+    final fcmToken = await getDeviceToken();
+    await _notificationService.registerDeviceToken(accessCode: accessToken, token: fcmToken);
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);
@@ -122,6 +158,8 @@ class LoginScreenViewModel extends ChangeNotifier{
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
+    final fcmToken = await getDeviceToken();
+    await _notificationService.registerDeviceToken(accessCode: accessToken, token: fcmToken);
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);

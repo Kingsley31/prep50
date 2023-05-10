@@ -51,7 +51,21 @@ class _InfoScreenState extends State<InfoScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               // padding: EdgeInsets.symmetric(horizontal: 20),
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 10,),
+                AppButton(
+                    title: "Reselect ExamBoard",
+                    color: true,
+                  width: 200,
+                  onTap: ()async{
+                    ExamBoardsBottomSheet.showExamBoardBottomSheet(context).then((value){
+                      List<ExamBoard> examBoardsList = infoScreenViewModel.getExamBoardList;
+                      ExamBoard examBoard = examBoardsList.firstWhere((eb) => eb.name == value);
+                      infoScreenViewModel.setSelectedExamBoard=examBoard;
+                    });
+                  },
+                ),
                 SizedBox(
                   height: 20,
                 ),
@@ -180,6 +194,7 @@ class _InfoScreenState extends State<InfoScreen> {
                                   }
                                 },
                               ),
+                            SizedBox(height: 20,)
                           ]
                         );
                       }

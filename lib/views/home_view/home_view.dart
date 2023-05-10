@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:prep50/utils/color.dart';
@@ -11,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../../view-models/home_screen_view_model.dart';
 import '../prep_study_view/tutorial_view/prep_study_screen.dart';
 import '../weekly_quiz/join_quiz_screen.dart';
+import 'components/logout_dialog.dart';
 import 'home_screen.dart';
 
 class HomeView extends StatefulWidget {
@@ -27,6 +29,7 @@ class HomeViewState extends State<HomeView>{
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       onAuthenticationStateChange();
+      onFcmTokenChange();
     });
 
   }
@@ -84,57 +87,71 @@ class HomeViewState extends State<HomeView>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 50.0),
-        child: FloatingActionButton(
-            onPressed: () {
-              PersistentNavBarNavigator.pushNewScreen(
-                context,
-                screen: PrepStudyScreen(),
-                withNavBar: true, // OPTIONAL VALUE. True by default.
-              );
+    return WillPopScope(
+      onWillPop: ()async{
+        final bool logout = await LogoutDialog.show(context)??false;
+        if(logout){
+          HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context, listen: false);
+          try{
+            await homeScreenViewModel.logoutUser(disableSettings: true);
+            //Navigator.pop(context);
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
+          }catch(e){}
+        }
+        return false;
+      },
+      child: Scaffold(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 50.0),
+          child: FloatingActionButton(
+              onPressed: () {
+                PersistentNavBarNavigator.pushNewScreen(
+                  context,
+                  screen: PrepStudyScreen(),
+                  withNavBar: true, // OPTIONAL VALUE. True by default.
+                );
 
-            },
-            backgroundColor: Color(0xffffffff),
-            child: Icon(
-              PrepsIcons.bookmark,
-              color: kPrimaryColor,
-            )),
-      ),
-      body: PersistentTabView(
-        context,
-        // controller: _controller,
-        screens: _buildScreens(),
-        items: _navBarsItems(),
-        confineInSafeArea: true,
-        backgroundColor: Colors.white, // Default is Colors.white.
-        handleAndroidBackButtonPress: true, // Default is true.
-        resizeToAvoidBottomInset:
-            true, // This needs to be true if you want to move up the screen when keyboard appears. Default is true.
-        stateManagement: true, // Default is true.
-        hideNavigationBarWhenKeyboardShows:
-            true, // Recommended to set 'resizeToAvoidBottomInset' as true while using this argument. Default is true.
-        decoration: NavBarDecoration(
-          borderRadius: BorderRadius.circular(10.0),
-          colorBehindNavBar: Colors.white,
+              },
+              backgroundColor: Color(0xffffffff),
+              child: Icon(
+                PrepsIcons.bookmark,
+                color: kPrimaryColor,
+              )),
         ),
-        popAllScreensOnTapOfSelectedTab: true,
-        popActionScreens: PopActionScreensType.all,
-        itemAnimationProperties: ItemAnimationProperties(
-          // Navigation Bar's items animation properties.
-          duration: Duration(milliseconds: 200),
-          curve: Curves.ease,
+        body: PersistentTabView(
+          context,
+          // controller: _controller,
+          screens: _buildScreens(),
+          items: _navBarsItems(),
+          confineInSafeArea: true,
+          backgroundColor: Colors.white, // Default is Colors.white.
+          handleAndroidBackButtonPress: true, // Default is true.
+          resizeToAvoidBottomInset:
+              true, // This needs to be true if you want to move up the screen when keyboard appears. Default is true.
+          stateManagement: true, // Default is true.
+          hideNavigationBarWhenKeyboardShows:
+              true, // Recommended to set 'resizeToAvoidBottomInset' as true while using this argument. Default is true.
+          decoration: NavBarDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            colorBehindNavBar: Colors.white,
+          ),
+          popAllScreensOnTapOfSelectedTab: true,
+          popActionScreens: PopActionScreensType.all,
+          itemAnimationProperties: ItemAnimationProperties(
+            // Navigation Bar's items animation properties.
+            duration: Duration(milliseconds: 200),
+            curve: Curves.ease,
+          ),
+          screenTransitionAnimation: ScreenTransitionAnimation(
+            // Screen transition animation on change of selected tab.
+            animateTabTransition: true,
+            curve: Curves.ease,
+            duration: Duration(milliseconds: 200),
+          ),
+          navBarStyle:
+              NavBarStyle.style1, // Choose the nav bar style with this property
         ),
-        screenTransitionAnimation: ScreenTransitionAnimation(
-          // Screen transition animation on change of selected tab.
-          animateTabTransition: true,
-          curve: Curves.ease,
-          duration: Duration(milliseconds: 200),
-        ),
-        navBarStyle:
-            NavBarStyle.style1, // Choose the nav bar style with this property
       ),
     );
   }
@@ -148,5 +165,13 @@ class HomeViewState extends State<HomeView>{
       }
     });
 
-   }
+  }
+
+  void onFcmTokenChange(){
+    FirebaseMessaging.instance.onTokenRefresh
+        .listen((fcmToken) async{
+      HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context,listen: false);
+      await homeScreenViewModel.registerFcmToken(fcmToken);
+    });
+  }
 }

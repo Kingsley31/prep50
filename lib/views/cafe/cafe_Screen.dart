@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/utils/text.dart';
-import 'package:prep50/views/settings_view/support_view.dart/faq.dart';
+import 'package:prep50/views/support_view.dart/faq_screen.dart';
 
 class CafeScreen extends StatelessWidget {
   // const SupportScreen({ Key key }) : super(key: key);
@@ -79,7 +79,7 @@ class CafeScreen extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () => Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => Faq())),
+          .push(MaterialPageRoute(builder: (context) => FaqScreen())),
       child: Container(
         color: Colors.white,
         child: Padding(

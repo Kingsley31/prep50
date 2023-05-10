@@ -8,7 +8,7 @@ import 'package:prep50/utils/exceptions.dart';
 import '../models/topic.dart';
 
 class SubjectService{
-  //final String baseUrl = "https://730793d0-3f8d-4d32-ac04-9e01b3e4bff7.mock.pstmn.io";
+
   final String baseUrl = BASE_URL;
   final String subjectEndpoint = "/resources/subjects";
   final String subjectEndpointWithTopic = "/resources/subjects";

@@ -1,9 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:prep50/models/user.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/login_screen_viewmodel.dart';
@@ -21,7 +18,6 @@ import 'package:sn_progress_dialog/progress_dialog.dart';
 
 import '../../utils/exceptions.dart';
 import '../../utils/third-party-login-info-validator.dart';
-import '../../widgets/app_dialog.dart';
 import 'package:prep50/models/user.dart' as appModel;
 
 class LoginScreen extends StatefulWidget {
@@ -34,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextInputType nameInputType = TextInputType.name;
   final TextInputType passwordInputType = TextInputType.visiblePassword;
+  final TextEditingController _passwordController = TextEditingController();
 
 
   @override
@@ -98,28 +95,42 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 34,
                     ),
-                    AppText.heading6M("Username"),
-                    SizedBox(
-                      height: 4,
-                    ),
-                    AppTextField(
-                      hText: "Enter your preferred Username",
-                      validator: loginValidator.nameValidator,
-                      textInputType: nameInputType,
-                      onChanged: (String value){
-                        //Set ViewModel Email
-                        loginScreenViewModel.setUsername=value;
-                      },
-                      maxLines: 1,
-                    ),
-                    SizedBox(
-                      height: 16,
+                    FutureBuilder<bool>(
+                      future: loginScreenViewModel.fingerPrintAuthEnabled,
+                      builder: (context,snapshot) {
+                        if(snapshot.hasData && snapshot.data==false){
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppText.heading6M("Username"),
+                              SizedBox(
+                                height: 4,
+                              ),
+                              AppTextField(
+                                hText: "Enter your preferred Username",
+                                validator: loginValidator.nameValidator,
+                                textInputType: nameInputType,
+                                onChanged: (String value){
+                                  //Set ViewModel Email
+                                  loginScreenViewModel.setUsername=value;
+                                },
+                                maxLines: 1,
+                              ),
+                              SizedBox(
+                                height: 16,
+                              ),
+                            ],
+                          );
+                        }
+                        return Container();
+                      }
                     ),
                     AppText.heading6M("Password"),
                     SizedBox(
                       height: 4,
                     ),
                     AppTextField(
+                      controller: _passwordController,
                       hText: "Enter your password",
                       showSuffixIcon: true,
                       icons: true,
@@ -154,45 +165,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 96,
                     ),
-                    AppButton(
-                      title: "Login",
-                      width: 343,
-                      color: true,
-                      onTap: () async{
-                        if (_formKey.currentState!.validate()) {
-                          progressDialog.show(
-                            max: 100,
-                            msg: 'Login in...',
-                            msgColor: Colors.black,
-                            progressValueColor: kPrimaryColor,
-                            borderRadius: 10.0,
-                            backgroundColor: Colors.white,
-                            barrierDismissible: false,
-                            elevation: 10.0,
-                          );
-                          try{
-                            final loginResponse = await loginScreenViewModel.loginUser();
-                            progressDialog.close();
-                            if(loginResponse.user.hasRegisteredExam){
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
-                              return;
-                            }
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) => InfoScreen()));
-                          }on ValidationException catch(e){
-                            progressDialog.close();
-                            appToast?.showToast(message: e.message);
-                            print(e.toString());
-                          }catch(e){
-                            progressDialog.close();
-                            appToast?.showToast(message: e.toString().substring(11));
-                            print(e.toString());
-                          }
-
+                    FutureBuilder<bool>(
+                      future: loginScreenViewModel.fingerPrintAuthEnabled,
+                      builder: (context,snapshot) {
+                        if(snapshot.hasData && snapshot.data==false){
+                          return _buildLoginButton(loginScreenViewModel,progressDialog);
+                        }else if(snapshot.hasData && snapshot.data==true){
+                          return _buildBiometricButton(loginScreenViewModel,progressDialog);
                         }
-
+                        return Center(child: SizedBox(height: 30,width: 30,child: CircularProgressIndicator(color: kPrimaryColor,),),);
                       }
                     ),
                     SizedBox(
@@ -316,8 +297,10 @@ class _LoginScreenState extends State<LoginScreen> {
     LoginScreenViewModel loginScreenViewModel = Provider.of<LoginScreenViewModel>(context, listen: false);
     //String? userLoginType = await loginScreenViewModel.userLoginType;
     bool userIsLoggedIn = await loginScreenViewModel.userIsLoggedIn;
-
     if(userIsLoggedIn==false){return;}
+
+    bool fingerPrintEnabled = await loginScreenViewModel.fingerPrintAuthEnabled;
+    if(fingerPrintEnabled){return;}
 
     appModel.User loggedInUser = await loginScreenViewModel.getLoggedInUser();
     if(loggedInUser.hasRegisteredExam){
@@ -331,5 +314,99 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
 
+  }
+
+  Widget _buildLoginButton(LoginScreenViewModel loginScreenViewModel, ProgressDialog progressDialog) {
+    return AppButton(
+        title: "Login",
+        width: 343,
+        color: true,
+        onTap: () async{
+          if (_formKey.currentState!.validate()) {
+            progressDialog.show(
+              max: 100,
+              msg: 'Login in...',
+              msgColor: Colors.black,
+              progressValueColor: kPrimaryColor,
+              borderRadius: 10.0,
+              backgroundColor: Colors.white,
+              barrierDismissible: false,
+              elevation: 10.0,
+            );
+            try{
+              final loginResponse = await loginScreenViewModel.loginUser();
+              progressDialog.close();
+              if(loginResponse.user.hasRegisteredExam){
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
+                return;
+              }
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                      builder: (context) => InfoScreen()));
+            }on ValidationException catch(e){
+              progressDialog.close();
+              appToast?.showToast(message: e.message);
+              print(e.toString());
+            }catch(e){
+              progressDialog.close();
+              appToast?.showToast(message: e.toString().substring(11));
+              print(e.toString());
+            }
+
+          }
+
+        }
+    );
+  }
+
+  Widget _buildBiometricButton(LoginScreenViewModel loginScreenViewModel, ProgressDialog progressDialog) {
+    return AppButton(
+        title: "Login With Biometrics",
+        width: 343,
+        color: true,
+        onTap: () async{
+          final String username = await loginScreenViewModel.loginUsername;
+          final String password = await loginScreenViewModel.loginPassword;
+          _passwordController.text = password;
+          loginScreenViewModel.setUsername=username;
+          loginScreenViewModel.setPassword=password;
+          bool isAuthenticated = await loginScreenViewModel.authenticateWithFingerPrint();
+          if (isAuthenticated) {
+            progressDialog.show(
+              max: 100,
+              msg: 'Login in...',
+              msgColor: Colors.black,
+              progressValueColor: kPrimaryColor,
+              borderRadius: 10.0,
+              backgroundColor: Colors.white,
+              barrierDismissible: false,
+              elevation: 10.0,
+            );
+            try{
+              final loginResponse = await loginScreenViewModel.loginUser();
+              progressDialog.close();
+              if(loginResponse.user.hasRegisteredExam){
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
+                return;
+              }
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                      builder: (context) => InfoScreen()));
+            }on ValidationException catch(e){
+              progressDialog.close();
+              appToast?.showToast(message: e.message);
+              print(e.toString());
+            }catch(e){
+              progressDialog.close();
+              appToast?.showToast(message: e.toString().substring(11));
+              print(e.toString());
+            }
+
+          }
+
+        }
+    );
   }
 }
