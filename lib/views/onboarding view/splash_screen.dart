@@ -4,6 +4,8 @@ import 'package:prep50/utils/custom_transition.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/views/onboarding%20view/onboarding_screen.dart';
 
+import '../../utils/deeplink_utils.dart';
+
 class SplashScreen extends StatefulWidget {
   // const OnBoardingScreen({ Key? key }) : super(key: key);
 
@@ -19,6 +21,11 @@ class _SplashScreenState extends State<SplashScreen> {
           .pushReplacement(CustomPageRoute(OnBoardingScreen()));
     });
     super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp)async {
+    //   await loadInitiallyReceivedLink(context);
+    //   listenForDeepLinkEvent(context);
+    //
+    // });
   }
 
   @override

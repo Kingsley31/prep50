@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:prep50/models/podcast_objective.dart';
 import 'package:prep50/models/podcast_topic.dart';
-import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/views/prep_study_view/components/favourite_icon.dart';
 import 'package:prep50/views/prep_study_view/components/objective-card.dart';
 import 'package:prep50/views/prep_study_view/components/topic-card.dart';
 import 'package:prep50/views/prep_study_view/podcast_view/podcast_screen.dart';
-import 'package:prep50/views/prep_study_view/podcast_view/ptopic_widget.dart';
 import 'package:prep50/widgets/app_text_field.dart';
 import 'package:provider/provider.dart';
 

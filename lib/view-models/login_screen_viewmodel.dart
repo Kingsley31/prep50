@@ -31,7 +31,7 @@ class LoginScreenViewModel extends ChangeNotifier{
   }
 
   Future<String> get loginUsername async{
-    return await _appData.getLoginUsername()??"";
+    return await _appData.getLoginUsername();
   }
 
   Future<bool> get userIsLoggedIn async{
@@ -70,14 +70,20 @@ class LoginScreenViewModel extends ChangeNotifier{
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
-    final fcmToken = await getDeviceToken();
-    await _notificationService.registerDeviceToken(accessCode: accessToken, token: fcmToken);
+    final String accessTokenExpiryDate=loginResponse.accessExpiresAt;
+    final String refreshTokenExpiryDate = loginResponse.refreshExpiresAt;
+    print(accessTokenExpiryDate);
+    print(refreshTokenExpiryDate);
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);
+    await _appData.saveApiTokenExpiryDate(accessTokenExpiryDate);
+    await _appData.saveApiRefreshTokenExpiryDate(refreshTokenExpiryDate);
     await _appData.setUserLoginStatus(true,AppData.loginTypePassword);
     await _appData.setLoginPassword(_password);
     await _appData.setLoginUsername(_username);
+    final fcmToken = await getDeviceToken();
+    await _notificationService.registerDeviceToken(token: fcmToken);
     //await _appData.setRegistrationCompleted(false);
     return loginResponse;
   }
@@ -141,12 +147,16 @@ class LoginScreenViewModel extends ChangeNotifier{
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
-    final fcmToken = await getDeviceToken();
-    await _notificationService.registerDeviceToken(accessCode: accessToken, token: fcmToken);
+    final String accessTokenExpiryDate=loginResponse.accessExpiresAt;
+    final String refreshTokenExpiryDate = loginResponse.refreshExpiresAt;
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);
+    await _appData.saveApiTokenExpiryDate(accessTokenExpiryDate);
+    await _appData.saveApiRefreshTokenExpiryDate(refreshTokenExpiryDate);
     await _appData.setUserLoginStatus(true,AppData.loginTypeFacebook);
+    final fcmToken = await getDeviceToken();
+    await _notificationService.registerDeviceToken(token: fcmToken);
     //await _appData.setRegistrationCompleted(false);
     return loginResponse;
   }
@@ -158,12 +168,16 @@ class LoginScreenViewModel extends ChangeNotifier{
     final user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
-    final fcmToken = await getDeviceToken();
-    await _notificationService.registerDeviceToken(accessCode: accessToken, token: fcmToken);
+    final String accessTokenExpiryDate=loginResponse.accessExpiresAt;
+    final String refreshTokenExpiryDate = loginResponse.refreshExpiresAt;
     await _appData.saveUser(user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);
+    await _appData.saveApiTokenExpiryDate(accessTokenExpiryDate);
+    await _appData.saveApiRefreshTokenExpiryDate(refreshTokenExpiryDate);
     await _appData.setUserLoginStatus(true,AppData.loginTypeGoogle);
+    final fcmToken = await getDeviceToken();
+    await _notificationService.registerDeviceToken(token: fcmToken);
     //await _appData.setRegistrationCompleted(false);
     return loginResponse;
   }

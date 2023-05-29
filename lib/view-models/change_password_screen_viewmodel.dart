@@ -8,8 +8,7 @@ class ChangePasswordScreenViewModel extends ChangeNotifier{
   AuthService _authService = AuthService();
 
   Future<Map<String,dynamic>> changePassword(String oldPassword, String newPassword)async{
-    String accessCode = await _appData.getToken()??"";
-   final response = await _authService.changeUserPassword(accessCode,oldPassword,newPassword);
+   final response = await _authService.changeUserPassword(oldPassword,newPassword);
    _appData.setLoginPassword(newPassword);
    return response;
   }

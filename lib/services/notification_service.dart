@@ -3,16 +3,18 @@ import 'package:http/http.dart' as http;
 import 'package:prep50/models/notification_list_item.dart';
 import '../constants/string_data.dart';
 import '../utils/exceptions.dart';
+import '../utils/prep50_api_utils.dart';
 
 class NotificationService{
   String _baseUrl = BASE_URL;
 
-  Future<List<NotificationListItem>> getAllUserNotifications({required String accessCode})async{
+  Future<List<NotificationListItem>> getAllUserNotifications()async{
+    final String accessToken = await getApiToken();
     final String notificationListEndpoint = "/user/notifications";
     final response = await http.get(
         Uri.parse("$_baseUrl$notificationListEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         }
     );
@@ -27,12 +29,13 @@ class NotificationService{
     throw ValidationException(message: "Error fetching your notifications, is the device online", errors: []);
   }
 
-  Future<Map<String,dynamic>> registerDeviceToken({required String accessCode,required String token})async{
+  Future<Map<String,dynamic>> registerDeviceToken({required String token})async{
+    final String accessToken = await getApiToken();
     final String notificationRegisterEndpoint = "/user/notifications";
     final response = await http.post(
         Uri.parse("$_baseUrl$notificationRegisterEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({

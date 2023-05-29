@@ -4,16 +4,18 @@ import 'package:prep50/models/faq.dart';
 import 'package:prep50/models/support_contact.dart';
 import 'package:prep50/utils/exceptions.dart';
 import '../constants/string_data.dart';
+import '../utils/prep50_api_utils.dart';
 
 class SystemInfoServices{
   final String baseUrl = BASE_URL;
 
-  Future<SupportContact> getSupportContact({required String accessCode})async{
+  Future<SupportContact> getSupportContact()async{
+    final String accessToken = await getApiToken();
     final String supportContactEndpoint= "/support/contacts";
     final response = await http.get(
       Uri.parse('$baseUrl$supportContactEndpoint'),
       headers: < String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
     );
@@ -26,12 +28,13 @@ class SystemInfoServices{
     throw ValidationException(message: "Error fetching support details, is the device online", errors: []);
   }
 
-  Future<List<Faq>> getFaqList({required String accessCode})async{
+  Future<List<Faq>> getFaqList()async{
+    final String accessToken = await getApiToken();
     final String faqListEndpoint="/support/faq";
     final response = await http.get(
       Uri.parse('$baseUrl$faqListEndpoint'),
       headers: < String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
     );
@@ -48,12 +51,13 @@ class SystemInfoServices{
     throw ValidationException(message: "Error fetching faqs, is the device online", errors: []);
   }
 
-  Future<String> getTermsOfService({required String accessCode})async{
+  Future<String> getTermsOfService()async{
+    final String accessToken = await getApiToken();
     final String termsOfServicesString = "/terms";
     final response = await http.get(
       Uri.parse('$baseUrl$termsOfServicesString'),
       headers: < String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
-import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/models/news_feed_list_item.dart';
 import 'package:prep50/models/user.dart';
 import 'package:prep50/utils/color.dart';
@@ -16,6 +15,7 @@ import 'package:prep50/widgets/app_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../utils/deeplink_utils.dart';
 import '../../view-models/home_screen_view_model.dart';
 import '../../view-models/news_feed_list_screen_viewmodel.dart';
 import '../Notification_view/notification_screen.dart';
@@ -204,6 +204,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onBookmarkButtonClicked: (isBookmarked,slug){
         try{
           newsFeedListScreenViewModel.bookmarkFeed(slug, isBookmarked);
+        }on LoginException catch(e){
+          appToast?.showToast(message: e.message);
         }on ValidationException catch(e){
           appToast?.showToast(message: e.message);
         }catch(e){
@@ -221,6 +223,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onLikeButtonClicked:(isLiked,slug){
         try{
           newsFeedListScreenViewModel.likeFeed(slug, isLiked);
+        }on LoginException catch(e){
+          appToast?.showToast(message: e.message);
         }on ValidationException catch(e){
           appToast?.showToast(message: e.message);
         }catch(e){
@@ -233,9 +237,13 @@ class _HomeScreenState extends State<HomeScreen> {
           appToast?.showReportSuccessToast();
         }
       },
-      onShareButtonClicked: (newsFeedListItem){
-        //Open Share Dialog
-        Share.share('$BASE_URL/newsfeed/view?slug=${newsFeedListItem.slug} \n\n${newsFeedListItem.content}', subject: 'Share Feed');
+      onShareButtonClicked: (newsFeedListItem)async{
+        try{
+          String postLink = await buildFeedLink(newsFeedListItem.slug);
+          Share.share('$postLink \n\n${newsFeedListItem.content}', subject: 'Share Feed');
+        }catch(e){
+          appToast?.showToast(message: "unable to load link please ensure your device is online and try again");
+        }
       },
     );
   }

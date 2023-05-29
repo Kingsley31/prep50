@@ -8,16 +8,18 @@ import 'package:prep50/models/weekly_quiz.dart';
 import 'package:prep50/models/weekly_quiz_participant.dart';
 
 import '../utils/exceptions.dart';
+import '../utils/prep50_api_utils.dart';
 
 class QuizService{
   String _baseUrl = BASE_URL;
 
-  Future<List<Question>> getObjectiveQuickQuiz({required String accessCode,required int objectiveId})async{
+  Future<List<Question>> getObjectiveQuickQuiz({required int objectiveId})async{
+    final String accessToken = await getApiToken();
     String quizEndpoint = "/study/quiz?id=$objectiveId";
     final response = await http.get(
       Uri.parse("$_baseUrl$quizEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         }
     );
@@ -33,12 +35,13 @@ class QuizService{
     throw ValidationException(message: "Error fetching question, is the device online", errors: []);
   }
 
-  Future<Map<String,dynamic>> submitObjectiveQuizScore({required int percentageScore,required objectiveId, required accessCode})async{
+  Future<Map<String,dynamic>> submitObjectiveQuizScore({required int percentageScore,required objectiveId})async{
+    final String accessToken = await getApiToken();
     String quizEndpoint = "/study/quiz";
     final response = await http.post(
         Uri.parse("$_baseUrl$quizEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
         body:jsonEncode(<String,dynamic>{
@@ -55,12 +58,13 @@ class QuizService{
     throw ValidationException(message: "Error submitting quiz score, is the device online", errors: []);
   }
 
-  Future<WeeklyQuiz> getWeeklyQuiz({required accessCode})async{
+  Future<WeeklyQuiz> getWeeklyQuiz()async{
+    final String accessToken = await getApiToken();
     String weeklyQuizEndpoint = "/weekly-quiz";
     final response = await http.get(
         Uri.parse("$_baseUrl$weeklyQuizEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
     );
@@ -79,12 +83,13 @@ class QuizService{
     throw WeeklyQuizException(message:jsonResponse["message"]);
   }
 
-  Future<int> submitUserWeeklyQuizAnswers({required Map<String, String> userAnswers, required String accessCode}) async{
+  Future<int> submitUserWeeklyQuizAnswers({required Map<String, String> userAnswers}) async{
+    final String accessToken = await getApiToken();
     String quizEndpoint = "/weekly-quiz";
     final response = await http.post(
         Uri.parse("$_baseUrl$quizEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
         body:jsonEncode(userAnswers)
@@ -98,12 +103,13 @@ class QuizService{
     throw ValidationException(message: "Error submitting quiz score, is the device online", errors: []);
   }
 
-  Future<List<WeeklyQuizParticipant>> getLeaderBoard({required String accessCode})async{
+  Future<List<WeeklyQuizParticipant>> getLeaderBoard()async{
+    final String accessToken = await getApiToken();
     String quizEndpoint = "/weekly-quiz/result";
     final response = await http.get(
         Uri.parse("$_baseUrl$quizEndpoint"),
         headers: < String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
     );

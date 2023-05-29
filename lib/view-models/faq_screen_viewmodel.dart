@@ -1,13 +1,11 @@
 
 import 'package:flutter/material.dart';
-import 'package:prep50/storage/app_data.dart';
 
 import '../models/faq.dart';
 import '../services/system_info_services.dart';
 import '../utils/exceptions.dart';
 
 class FaqScreenViewModel extends ChangeNotifier{
-  AppData _appData = AppData();
   SystemInfoServices _systemInfoServices = SystemInfoServices();
   List<Faq> _faqList = [];
   String _errorMessage = "";
@@ -30,9 +28,12 @@ class FaqScreenViewModel extends ChangeNotifier{
     _isLoadingFaqList=true;
     _errorMessage = "";
     notifyListeners();
-    String accessCode = await _appData.getToken()??"";
     try{
-      _faqList=await _systemInfoServices.getFaqList(accessCode: accessCode);
+      _faqList=await _systemInfoServices.getFaqList();
+      _isLoadingFaqList=false;
+      notifyListeners();
+    }on LoginException catch(e){
+      _errorMessage = e.message;
       _isLoadingFaqList=false;
       notifyListeners();
     }on ValidationException catch(e){

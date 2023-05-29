@@ -8,18 +8,24 @@ class LoginResponse{
   User user;
   String accessCode;
   String refreshToken;
+  String accessExpiresAt;
+  String refreshExpiresAt;
 
-  LoginResponse({required this.user,required this.accessCode,required this.refreshToken});
+  LoginResponse({required this.user,required this.accessCode,required this.refreshToken,required this.accessExpiresAt,required this.refreshExpiresAt});
 
   LoginResponse.fromJson(Map<String,dynamic> json):
       user = User.fromJson(json["user"]),
       accessCode=json["access"],
-      refreshToken=json["refresh"];
+      refreshToken=json["refresh"],
+      accessExpiresAt=json["access_expires_at"],
+      refreshExpiresAt=json["refresh_expires_at"];
 
   toJson() => {
     "access":accessCode,
     "refresh":refreshToken,
-    "user":user.toJson()
+    "user":user.toJson(),
+    "access_expires_at":accessExpiresAt,
+    "refresh_expires_at":refreshExpiresAt
   };
 
 }

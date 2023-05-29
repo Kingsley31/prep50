@@ -8,6 +8,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/widgets/app_back_icon.dart';
+import 'package:prep50/widgets/user_exams_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
@@ -77,6 +78,13 @@ class _SubjectsReselectScreenState extends State<SubjectsReselectScreen> {
                       Consumer<SubjectReselectionScreenViewModel>(
                           builder: (context,subjectReselectionScreenViewModel,child) {
                             if(subjectReselectionScreenViewModel.isLoadingSubjects==false && subjectReselectionScreenViewModel.errorMessage.isEmpty){
+                              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                                if(subjectReselectionScreenViewModel.userShouldSelectExamBoard){
+                                  UserExamsBottomSheet.showExamBoardBottomSheet(context,subjectReselectionScreenViewModel.userExamList).then((value){
+                                    subjectReselectionScreenViewModel.loadUserExamSubjects(value);
+                                  });
+                                }
+                              });
                               return _buildSubjectSelectionNoticeWidget(subjectReselectionScreenViewModel);
                             }
                             return Container();

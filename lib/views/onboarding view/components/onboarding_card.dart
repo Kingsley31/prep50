@@ -101,7 +101,7 @@ class OnboardingCard extends StatelessWidget {
                     child: AppButton(
                       color: true,
                       title: "Create account",
-                      onTap: () => Navigator.of(context).pushReplacement(
+                      onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => CreateAccount())
                           // MaterialPageRoute(
@@ -119,7 +119,7 @@ class OnboardingCard extends StatelessWidget {
                       color: Colors.white,
                       textColor: kPrimaryColor,
                       title: "Login",
-                      onTap: () => Navigator.of(context).pushReplacement(
+                      onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (context) => LoginScreen())),
                       // width: 343,

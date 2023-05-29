@@ -2,12 +2,10 @@
 import 'package:flutter/material.dart';
 
 import '../services/system_info_services.dart';
-import '../storage/app_data.dart';
 import '../utils/exceptions.dart';
 
 class TermsOfServiceScreenViewModel extends ChangeNotifier{
   SystemInfoServices _systemInfoServices = SystemInfoServices();
-  AppData _appData = AppData();
   String _termsOfServiceMarkdown ="";
   bool _isLoadingTermsOfService = false;
   String _errorMessage="";
@@ -28,9 +26,12 @@ class TermsOfServiceScreenViewModel extends ChangeNotifier{
     _isLoadingTermsOfService=true;
     _errorMessage="";
     notifyListeners();
-    final String accessCode = await _appData.getToken()??"";
     try{
-      _termsOfServiceMarkdown = await _systemInfoServices.getTermsOfService(accessCode: accessCode);
+      _termsOfServiceMarkdown = await _systemInfoServices.getTermsOfService();
+      _isLoadingTermsOfService=false;
+      notifyListeners();
+    }on LoginException catch(e){
+      _errorMessage = e.message;
       _isLoadingTermsOfService=false;
       notifyListeners();
     }on ValidationException catch(e){

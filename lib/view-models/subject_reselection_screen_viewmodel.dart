@@ -6,13 +6,11 @@ import 'package:prep50/services/auth-service.dart';
 import 'package:prep50/services/exam-board-service.dart';
 import 'package:prep50/services/subject-service.dart';
 import 'package:prep50/services/user-exam-service.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 import '../models/subject.dart';
 
 class SubjectReselectionScreenViewModel extends ChangeNotifier{
-  final AppData _appData = AppData();
   final ExamBoardService _examBoardService = ExamBoardService();
   final UserExamService _userExamService = UserExamService();
   final SubjectService _subjectService = SubjectService();
@@ -20,11 +18,16 @@ class SubjectReselectionScreenViewModel extends ChangeNotifier{
   ExamBoard _selectedExamBoard = ExamBoard(name: "", price: 0, subject_count: 0, status: false);
   List<Subject> _allSubjects = [];
   List<Subject> _userSubjects = [];
+  List<UserExam> _userExamList = [];
   Set<int> _removedSubjectIds={};
   Set<int> _addedSubjectIds = {};
   bool _isLoadingSubjects=false;
   String _errorMessage="";
+  bool _userShouldSelectExamBoard=false;
 
+  bool get userShouldSelectExamBoard{
+    return _userShouldSelectExamBoard;
+  }
   bool get isLoadingSubjects{
     return _isLoadingSubjects;
   }
@@ -43,6 +46,10 @@ class SubjectReselectionScreenViewModel extends ChangeNotifier{
 
   List<Subject> get userSubjects{
     return _userSubjects;
+  }
+
+  List<UserExam> get userExamList{
+    return _userExamList;
   }
 
   bool subjectIsUserSubject(Subject subject){
@@ -67,14 +74,21 @@ class SubjectReselectionScreenViewModel extends ChangeNotifier{
     _isLoadingSubjects=true;
     _errorMessage="";
     notifyListeners();
-    String accessCode = await _appData.getToken()??"";
     try{
-      final UserExam userExam = (await _userExamService.getUserExams(accessCode))[0];
-      _userSubjects=await _subjectService.getUserExamSubjects(userExam.exam.toLowerCase(), accessCode);
+      _userExamList = await _userExamService.getUserExams();
+      if(_userExamList.length>1){
+        _userShouldSelectExamBoard=true;
+      }
+      final UserExam userExam = _userExamList[0];
+      _userSubjects=await _subjectService.getUserExamSubjects(userExam.exam.toLowerCase());
       _allSubjects= await _subjectService.getAllSubjectsWithTopic();
       List<ExamBoard> _allExamBoards = await _examBoardService.getAllExamBoards();
       _selectedExamBoard=_allExamBoards.firstWhere((element) => element.name.toLowerCase()==userExam.exam.toLowerCase());
       _isLoadingSubjects=false;
+      notifyListeners();
+    }on LoginException catch (e){
+      _isLoadingSubjects=false;
+      _errorMessage = e.message;
       notifyListeners();
     }on ValidationException catch (e){
       _isLoadingSubjects=false;
@@ -89,14 +103,39 @@ class SubjectReselectionScreenViewModel extends ChangeNotifier{
   }
 
   updateUserSubjects()async{
-    String accessCode = await _appData.getToken()??"";
     if(_removedSubjectIds.isNotEmpty){
-      await _authService.updateUserSelectedSubjects(_selectedExamBoard.name.toLowerCase(), "remove", _removedSubjectIds, accessCode);
+      await _authService.updateUserSelectedSubjects(_selectedExamBoard.name.toLowerCase(), "remove", _removedSubjectIds);
     }
     if(_addedSubjectIds.isNotEmpty){
-      await _authService.updateUserSelectedSubjects(_selectedExamBoard.name.toLowerCase(), "add", _addedSubjectIds, accessCode);
+      await _authService.updateUserSelectedSubjects(_selectedExamBoard.name.toLowerCase(), "add", _addedSubjectIds);
     }
+  }
 
+  loadUserExamSubjects(UserExam userExam)async{
+    _isLoadingSubjects=true;
+    _errorMessage="";
+    _userShouldSelectExamBoard=false;
+    notifyListeners();
+    try{
+      _userSubjects=await _subjectService.getUserExamSubjects(userExam.exam.toLowerCase());
+      _allSubjects= await _subjectService.getAllSubjectsWithTopic();
+      List<ExamBoard> _allExamBoards = await _examBoardService.getAllExamBoards();
+      _selectedExamBoard=_allExamBoards.firstWhere((element) => element.name.toLowerCase()==userExam.exam.toLowerCase());
+      _isLoadingSubjects=false;
+      notifyListeners();
+    }on LoginException catch (e){
+      _isLoadingSubjects=false;
+      _errorMessage = e.message;
+      notifyListeners();
+    }on ValidationException catch (e){
+      _isLoadingSubjects=false;
+      _errorMessage = e.message;
+      notifyListeners();
+    }catch(e){
+      _isLoadingSubjects=false;
+      _errorMessage = e.toString().substring(11);
+      notifyListeners();
+    }
 
   }
 

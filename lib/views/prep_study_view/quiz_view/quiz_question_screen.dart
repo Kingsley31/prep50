@@ -164,6 +164,9 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
               progressDialog.close();
               Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (context) => QuizCompleteScreen(currentObjective: widget.currentObjective,)));
+            }on LoginException catch(e){
+              progressDialog.close();
+              appToast?.showToast(message: e.message);
             }on ValidationException catch(e){
               progressDialog.close();
               appToast?.showToast(message: e.message);

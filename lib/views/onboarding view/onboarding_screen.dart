@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/deeplink_utils.dart';
 import 'components/onboarding_card.dart';
 
 class OnBoardingScreen extends StatelessWidget {
@@ -7,6 +8,10 @@ class OnBoardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      loadInitiallyReceivedLink(context);
+      listenForDeepLinkEvent(context);
+    });
     return Scaffold(
       body: OnboardingCard(),
     );

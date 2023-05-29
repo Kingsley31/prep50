@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:prep50/models/exam_board.dart';
 import 'package:prep50/models/subject.dart';
 import 'package:prep50/utils/color.dart';
+import 'package:prep50/utils/exceptions.dart';
 import 'package:prep50/utils/text.dart';
 import 'package:prep50/view-models/info-screen-view-model.dart';
 import 'package:prep50/views/authentication_view/welcome_screen.dart';
@@ -29,12 +30,15 @@ class _InfoScreenState extends State<InfoScreen> {
   void initState() {
     super.initState();
      appToast = AppToast(context: context);
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       InfoScreenViewModel infoScreenViewModel = Provider.of<InfoScreenViewModel>(context, listen: false);
+      infoScreenViewModel.loadAllSubjects();
       ExamBoardsBottomSheet.showExamBoardBottomSheet(context).then((value){
-        List<ExamBoard> examBoardsList = infoScreenViewModel.getExamBoardList;
-        ExamBoard examBoard = examBoardsList.firstWhere((eb) => eb.name == value);
-        infoScreenViewModel.setSelectedExamBoard=examBoard;
+        // List<ExamBoard> examBoardsList = infoScreenViewModel.getExamBoardList;
+        // ExamBoard examBoard = examBoardsList.firstWhere((eb) => eb.name == value);
+        //print(value.name);
+        infoScreenViewModel.setSelectedExamBoard=value;
       });
     });
     
@@ -43,7 +47,6 @@ class _InfoScreenState extends State<InfoScreen> {
   @override
   Widget build(BuildContext context) {
     InfoScreenViewModel infoScreenViewModel = Provider.of<InfoScreenViewModel>(context, listen: false);
-    final ProgressDialog progressDialog = ProgressDialog(context:context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -60,9 +63,10 @@ class _InfoScreenState extends State<InfoScreen> {
                   width: 200,
                   onTap: ()async{
                     ExamBoardsBottomSheet.showExamBoardBottomSheet(context).then((value){
-                      List<ExamBoard> examBoardsList = infoScreenViewModel.getExamBoardList;
-                      ExamBoard examBoard = examBoardsList.firstWhere((eb) => eb.name == value);
-                      infoScreenViewModel.setSelectedExamBoard=examBoard;
+                      // List<ExamBoard> examBoardsList = infoScreenViewModel.getExamBoardList;
+                      // ExamBoard examBoard = examBoardsList.firstWhere((eb) => eb.name == value);
+                      print(value.name);
+                      infoScreenViewModel.setSelectedExamBoard=value;
                     });
                   },
                 ),
@@ -103,35 +107,33 @@ class _InfoScreenState extends State<InfoScreen> {
                 SizedBox(
                   height: 40,
                 ),
-                FutureBuilder<List<Subject>>(
-                  future:infoScreenViewModel.getAllSubjects(),
-                  builder: (context,AsyncSnapshot<List<Subject>> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      if (snapshot.hasError) {
+                Consumer<InfoScreenViewModel>(
+                  builder: (context,infoScreenViewModel,child) {
+                      if (infoScreenViewModel.errorMessage.isNotEmpty) {
                         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                          appToast?.showToast(message: "${snapshot.error}");
+                          appToast?.showToast(message: "${infoScreenViewModel.errorMessage}");
                         });
-                        log("${snapshot.error}");
+                        log("${infoScreenViewModel.errorMessage}");
                          return AppButton(
                            title: "Load Subjects",
                            width: 197,
                            color: true,
                            onTap: () => {
-                             setState(() {})
+                             infoScreenViewModel.loadAllSubjects()
                            },
                          );
 
                         //  return AppText.captionTextM("${snapshot.error}");
                       }
 
-                      if(snapshot.hasData) {
-                        List<Subject> networkSubjects = snapshot.data==null ? []:snapshot.data!;
+                      if(infoScreenViewModel.isLoadingSubjects==false && infoScreenViewModel.errorMessage.isEmpty) {
+                        List<Subject> networkSubjects = infoScreenViewModel.subjectsList;
                         List<Subjects> subjects = networkSubjects.map((subject) {
                           if (subject.name == "English Language") {
-                            infoScreenViewModel.addSelectedSubject = subject.id;
+                            infoScreenViewModel.addSelectedSubjectWithoutNotification = subject.id;
                            return Subjects(title: subject.name,
                               id: subject.id.toString(),
-                              selected: true,
+                              selected: infoScreenViewModel.getSelectedSubjectIds.contains(subject.id),
                               onSelected: (String subjectId,bool selected){
                                 if(selected){
                                   infoScreenViewModel.addSelectedSubject = int.parse(subjectId);
@@ -143,6 +145,7 @@ class _InfoScreenState extends State<InfoScreen> {
                           } else {
                             return Subjects(title: subject.name,
                               id: subject.id.toString(),
+                              selected: infoScreenViewModel.getSelectedSubjectIds.contains(subject.id),
                               onSelected: (String subjectId,bool selected){
                                 if(selected){
                                   infoScreenViewModel.addSelectedSubject = int.parse(subjectId);
@@ -163,42 +166,12 @@ class _InfoScreenState extends State<InfoScreen> {
                               SizedBox(
                                 height: 80,
                               ),
-                              AppButton(
-                                title: "Continue",
-                                width: 197,
-                                color: true,
-                                onTap: () async {
-                                  if(infoScreenViewModel.getSelectedSubjectIds.length==infoScreenViewModel.getSelectedExamboard?.subject_count){
-                                      progressDialog.show(
-                                      max: 100,
-                                      msg: 'Updating subjects...',
-                                      msgColor: Colors.black,
-                                      progressValueColor: kPrimaryColor,
-                                      borderRadius: 10.0,
-                                      backgroundColor: Colors.white,
-                                      barrierDismissible: false,
-                                      elevation: 10.0,
-                                      );
-                                      try{
-                                       await infoScreenViewModel.updateUserSubjects();
-                                       progressDialog.close();
-                                       Navigator.of(context).pushReplacement(
-                                           MaterialPageRoute(builder: (context) => WelcomeScreen()));
-                                      }catch(e){
-                                        progressDialog.close();
-                                        appToast?.showToast(message: e.toString().substring(11));
-                                        print(e.toString().substring(11));
-                                      }
-                                  }else{
-                                    appToast?.showToast(message: "Please select ${infoScreenViewModel.getSelectedExamboard?.subject_count} subjects from the list.");
-                                  }
-                                },
-                              ),
+                              infoScreenViewModel.currentExamBoardIndex==infoScreenViewModel.totalNumOfExamBoards?
+                              _showContinueWithPrevBtnorOnlyContinueBtn(infoScreenViewModel):_showNextButton(infoScreenViewModel),
                             SizedBox(height: 20,)
                           ]
                         );
                       }
-                    }
                     return CircularProgressIndicator(color: kPrimaryColor,);
                   }
                 ),
@@ -209,6 +182,84 @@ class _InfoScreenState extends State<InfoScreen> {
       ),
     );
   }
+
+ Widget _showContinueWithPrevBtnorOnlyContinueBtn(InfoScreenViewModel infoScreenViewModel) {
+    if(infoScreenViewModel.examBoardIsBoth==false){
+      return _buildContinueBtn(width:197,infoScreenViewModel:infoScreenViewModel);
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AppButton(
+          title: "Previous",
+          width: 120,
+          color: true,
+          onTap: () {
+            infoScreenViewModel.previous();
+          },
+        ),
+        Spacer(),
+        _buildContinueBtn(width:120,infoScreenViewModel:infoScreenViewModel)
+      ],
+    );
+ }
+
+  Widget _buildContinueBtn({required double width,required InfoScreenViewModel infoScreenViewModel}) {
+    final ProgressDialog progressDialog = ProgressDialog(context:context);
+    return AppButton(
+      title: "Continue",
+      width: width,
+      color: true,
+      onTap: () async {
+        if(infoScreenViewModel.getSelectedSubjectIds.length==infoScreenViewModel.getSelectedExamboard?.subject_count){
+          progressDialog.show(
+            max: 100,
+            msg: 'Updating subjects...',
+            msgColor: Colors.black,
+            progressValueColor: kPrimaryColor,
+            borderRadius: 10.0,
+            backgroundColor: Colors.white,
+            barrierDismissible: false,
+            elevation: 10.0,
+          );
+          try{
+            await infoScreenViewModel.updateUserSubjects();
+            progressDialog.close();
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => WelcomeScreen()));
+          }on LoginException catch(e){
+            progressDialog.close();
+            appToast?.showToast(message:e.message);
+          }catch(e){
+            progressDialog.close();
+            appToast?.showToast(message: e.toString().substring(11));
+            print(e.toString().substring(11));
+          }
+        }else{
+          appToast = AppToast(context: context);
+          appToast?.showToast(message: "Please select ${infoScreenViewModel.getSelectedExamboard?.subject_count} subjects from the list.");
+        }
+      },
+    );
+  }
+
+ Widget _showNextButton(InfoScreenViewModel infoScreenViewModel) {
+    return AppButton(
+      title: "Next",
+      width: 197,
+      color: true,
+      onTap: () {
+      if(infoScreenViewModel.getSelectedSubjectIds.length==infoScreenViewModel.getSelectedExamboard?.subject_count){
+        infoScreenViewModel.next();
+      }else{
+        appToast = AppToast(context: context);
+        appToast?.showToast(message: "Please select ${infoScreenViewModel.getSelectedExamboard?.subject_count} subjects from the list.");
+      }
+
+      },
+    );
+ }
 
 
 }

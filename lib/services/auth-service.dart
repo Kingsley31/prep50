@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:prep50/models/login_response.dart';
 import 'package:prep50/utils/exceptions.dart';
+import 'package:prep50/utils/prep50_api_utils.dart';
 import '../constants/string_data.dart';
 import '../models/user.dart';
 import 'package:http_parser/http_parser.dart';
@@ -11,26 +12,28 @@ class AuthService{
   final String baseUrl = BASE_URL;
 
 
-  Future<LoginResponse> registerUser(String username,String email,String phone,String password) async {
+  Future<LoginResponse> registerUser(String username,String email,String phone,String password,String referer) async {
     final String registrationEndpoint = "/auth/register";
+    final registrationDetails = <String, String>{
+      'username': username,
+      'email':email,
+      'phone':phone,
+      'password':password,
+    };
+    if(referer.isNotEmpty){
+      registrationDetails.addAll({'referer':referer});
+    }
+    
     final response = await http.post(
       Uri.parse('$baseUrl$registrationEndpoint'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
-        'username': username,
-        'email':email,
-        'phone':phone,
-        'password':password,
-      }),
+      body: jsonEncode(registrationDetails),
     );
     if (response.statusCode == 200) {
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
-      String accessCode = jsonResponse["data"]["access"];
-      String refreshToken = jsonResponse["data"]["refresh"];
-      User user = User.fromJson(jsonResponse["data"]["user"]);
-      LoginResponse loginResponse = LoginResponse(user: user, accessCode: accessCode, refreshToken: refreshToken);
+      LoginResponse loginResponse = LoginResponse.fromJson(jsonResponse["data"]);
       return loginResponse;
 
     }else if(response.statusCode == 400){
@@ -158,9 +161,10 @@ class AuthService{
   }
 
 
-  Future<Map<String,dynamic>> updateUserSubjects(String examBoard,Set<int> selectedSubjects,String accessToken) async {
+  Future<Map<String,dynamic>> updateUserSubjects(Map<String,List<int>> subjectUpdatePayload) async {
     final String updateEndpoint = "/user/subjects";
-    print(selectedSubjects.toString());
+    final String accessToken = await getApiToken();
+    print(subjectUpdatePayload.toString());
     print(accessToken);
     final response = await http.post(
       Uri.parse('$baseUrl$updateEndpoint'),
@@ -168,9 +172,7 @@ class AuthService{
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode(<String, dynamic>{
-        examBoard:selectedSubjects.toList(),
-      }),
+      body: jsonEncode(subjectUpdatePayload),
     );
     print(response.body);
     if (response.statusCode == 200) {
@@ -192,16 +194,17 @@ class AuthService{
   }
 
 
-  Future<Map<String,dynamic>> logoutUser(String accessCode) async {
+  Future<Map<String,dynamic>> logoutUser() async {
+    final String accessToken = await getApiToken();
     final String userDetailsEndpoint="/auth/logout";
     final response = await http.get(
       Uri.parse('$baseUrl$userDetailsEndpoint'),
       headers: <String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
     );
-    print("Access Code: $accessCode");
+    print("Access Code: $accessToken");
     print(response.statusCode);
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response, then parse the JSON.
@@ -221,7 +224,8 @@ class AuthService{
   }
 
 
-  Future<User> getUserDetails(String accessToken) async {
+  Future<User> getUserDetails() async {
+    final String accessToken = await getApiToken();
     final String userDetailsEndpoint="/user/profile";
     final response = await http.get(
       Uri.parse('$baseUrl$userDetailsEndpoint'),
@@ -243,16 +247,16 @@ class AuthService{
   }
 
   Future<LoginResponse> updateUserProfile({
-    required String accessCode,
     required String phone,
     required String address,
     required String gender,
     required String photo})async{
+    final String accessToken = await getApiToken();
       final String userProfileUpdateEndpoint="/user/profile";
       final response = await http.put(
         Uri.parse('$baseUrl$userProfileUpdateEndpoint'),
         headers: <String, String>{
-          'Authorization': 'Bearer $accessCode',
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -279,13 +283,13 @@ class AuthService{
   }
 
   Future<Map<String,dynamic>> uploadUserProfilePicture({
-    required String accessCode,
     required File imageFile
   })async{
+    final String accessToken = await getApiToken();
     String photoUploadEndpoint = "/user/profile";
     http.MultipartRequest request = http.MultipartRequest("POST",Uri.parse('$baseUrl$photoUploadEndpoint'));
     request.headers.addAll(<String, String>{
-      'Authorization': 'Bearer $accessCode',
+      'Authorization': 'Bearer $accessToken',
       'Content-Type': 'application/json',
     });
     print(imageFile.path.split('/').last);
@@ -324,7 +328,8 @@ class AuthService{
     }
   }
 
-  Future<Map<String,dynamic>> updateUserSelectedSubjects(String examBoard,String action,Set<int> selectedSubjects,String accessToken) async {
+  Future<Map<String,dynamic>> updateUserSelectedSubjects(String examBoard,String action,Set<int> selectedSubjects) async {
+    final String accessToken = await getApiToken();
     final String updateEndpoint = "/user/subjects";
     print(selectedSubjects.toString());
     print(accessToken);
@@ -360,12 +365,13 @@ class AuthService{
     }
   }
 
-  Future<Map<String,dynamic>> changeUserPassword(String accessCode, String oldPassword, String newPassword) async{
+  Future<Map<String,dynamic>> changeUserPassword(String oldPassword, String newPassword) async{
+    final String accessToken = await getApiToken();
     String changePasswordEndpoint = "/user/change-password";
     final response = await http.post(
       Uri.parse('$baseUrl$changePasswordEndpoint'),
       headers: <String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, dynamic>{

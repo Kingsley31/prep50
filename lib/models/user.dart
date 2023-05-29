@@ -10,9 +10,10 @@ class User{
   String gender;
   String address;
   bool hasRegisteredExam;
+  String createdAt;
   List<UserExam>? exams;
 
-  User({this.username, this.email,this.phone,this.photo="",this.referral,this.gender="",this.address="",this.exams,this.hasRegisteredExam=false});
+  User({this.username, this.email,this.phone,this.photo="",this.referral,this.gender="",this.address="",this.exams,this.hasRegisteredExam=false,this.createdAt=""});
 
 
   User.fromJson(Map<String,dynamic> json) :
@@ -23,6 +24,7 @@ class User{
     referral = json["referral"],
     gender = json.containsKey("gender") ? json["gender"]:"",
         address = json.containsKey("address") ? json["address"]:"",
+    createdAt = json.containsKey("created_at")?json["created_at"]:"",
     hasRegisteredExam = json.containsKey("has_registered_exam") ? json["has_registered_exam"] : false,
     exams = json.containsKey("exams") ? json["exams"].map<UserExam>((examJson) => UserExam.fromJson(examJson)).toList():null;
 
@@ -36,6 +38,7 @@ class User{
     data["referral"] = this.referral;
     data["gender"] = this.gender;
     data["address"] = this.address;
+    data["created_at"] = this.createdAt;
     data["has_registered_exam"] = hasRegisteredExam;
     data["exams"] = exams != null ? exams?.map<Map<String,dynamic>>((exam) => exam.toJson()).toList() : null;
     return data;

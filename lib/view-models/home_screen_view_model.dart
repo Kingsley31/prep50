@@ -26,15 +26,15 @@ class HomeScreenViewModel extends ChangeNotifier{
 
   logoutUser({bool disableSettings=false}) async {
     String? userLoginType = await _appData.getUserLoginType();
-    String accessCode = await _appData.getToken() ?? "";
     try{
-      await _authService.logoutUser(accessCode);
+      await _authService.logoutUser();
     }catch(e){}
-    await _appData.setUserLoginStatus(false, AppData.loginTypePassword);
+
     if(disableSettings){
       await _appData.setFingerPrintEnabled(false);
       await _appData.setSmartLock(false);
     }
+    await _appData.setUserLoginStatus(false, AppData.loginTypePassword);
     if(userLoginType != AppData.loginTypePassword){
       await FirebaseAuth.instance.signOut();
     }
@@ -42,7 +42,6 @@ class HomeScreenViewModel extends ChangeNotifier{
   }
 
   registerFcmToken(String fcmToken) async{
-    String accessCode = await _appData.getToken() ?? "";
-    _notificationService.registerDeviceToken(accessCode: accessCode, token: fcmToken);
+    _notificationService.registerDeviceToken(token: fcmToken);
   }
 }

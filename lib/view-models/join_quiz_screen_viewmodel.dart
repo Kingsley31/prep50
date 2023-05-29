@@ -4,12 +4,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:prep50/models/weekly_quiz.dart';
 import 'package:prep50/services/quiz-service.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
+import '../models/user_exam.dart';
+import '../services/user-exam-service.dart';
+import '../utils/prep50_api_utils.dart';
+
 class JoinQuizScreenViewModel extends ChangeNotifier{
-  AppData _appData = AppData();
   QuizService _quizService = QuizService();
+  final UserExamService _userExamService = UserExamService();
+  List<UserExam> _userExamList = [];
   bool _showJoinQuizButton = false;
   bool _isLoadingWeeklyQuiz =false;
   String _weeklyQuizNotice = "";
@@ -17,6 +21,11 @@ class JoinQuizScreenViewModel extends ChangeNotifier{
   WeeklyQuiz _weeklyQuiz = WeeklyQuiz("", 0, "", 0, "", 0, 0, false, []);
   DateTime _startTime = DateTime.now();//DateTime(2023,4,24,9,30)
   Duration _countDown = Duration(days:0,hours: 0,minutes: 0,seconds: 0);
+  bool _shouldTakeUserToSubscriptionScreen=false;
+
+  bool get shouldTakeUserToSubscriptionScreen{
+    return _shouldTakeUserToSubscriptionScreen;
+  }
 
   WeeklyQuiz get weeklyQuiz {
     return _weeklyQuiz;
@@ -43,13 +52,14 @@ class JoinQuizScreenViewModel extends ChangeNotifier{
   }
 
   loadWeekLyQuiz()async{
-    String accessCode = await _appData.getToken()??"";
     try{
       _isLoadingWeeklyQuiz = true;
       _weeklyQuizNotice = "";
       _errorMessage = "";
       notifyListeners();
-      _weeklyQuiz=await _quizService.getWeeklyQuiz(accessCode: accessCode);
+      _userExamList = await _userExamService.getUserExams();
+      _shouldTakeUserToSubscriptionScreen=checkShouldTakeUserToSubscriptionScreen(_userExamList);
+      _weeklyQuiz=await _quizService.getWeeklyQuiz();
       _startTime = DateTime.parse(_weeklyQuiz.startTime).toLocal();
       final DateTime now = DateTime.now();
       _showJoinQuizButton = _startTime.isBefore(now);

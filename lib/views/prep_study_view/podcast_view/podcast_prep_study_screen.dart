@@ -3,16 +3,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:prep50/utils/text.dart';
-import 'package:prep50/views/prep_study_view/podcast_view/podcast_subject_card.dart';
 import 'package:prep50/views/prep_study_view/podcast_view/ptopic_screen.dart';
 import 'package:prep50/views/prep_study_view/tutorial_view/prep_study_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/subject.dart';
-import '../../../utils/exceptions.dart';
 import '../../../view-models/prep-study-subjects-viewmodel.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_toast.dart';
+import '../../../widgets/user_exams_bottom_sheet.dart';
+import '../../subscription/subscription_screen.dart';
 import '../components/subject-card.dart';
 import '../components/tutorial-podcast-nav.dart';
 
@@ -28,11 +28,14 @@ class _PodcastPrepStudyScreenState extends State<PodcastPrepStudyScreen> {
   void initState() {
     super.initState();
     appToast = AppToast(context: context);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      PrepStudySubjectsViewModel prepStudySubjectsViewModel = Provider.of<PrepStudySubjectsViewModel>(context,listen: false);
+      prepStudySubjectsViewModel.loadStudentExamSubjects();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    PrepStudySubjectsViewModel prepStudySubjectsViewModel = Provider.of<PrepStudySubjectsViewModel>(context,listen: false);
     return Scaffold(
       backgroundColor: Color(0xffE5E5E5),
       body: Column(
@@ -77,43 +80,13 @@ class _PodcastPrepStudyScreenState extends State<PodcastPrepStudyScreen> {
             height: 5,
           ),
           Expanded(
-              child: FutureBuilder<List<Subject>>(
-                future: prepStudySubjectsViewModel.getStudentExamSubjects(),
-                builder: (context,snapshot){
-                  if(snapshot.connectionState == ConnectionState.done && snapshot.hasData){
-                    return _buildSubjectList(snapshot.data ?? [] );
-                  }
+              child: Consumer<PrepStudySubjectsViewModel>(
+                builder: (context,prepStudySubjectsViewModel,child){
+                  return prepStudySubjectsViewModel.errorMessage.isNotEmpty?
+                  _buildErrorWidget(prepStudySubjectsViewModel):
+                  prepStudySubjectsViewModel.isLoadingSubjects?
+                  _buildLoadingWidget():_buildSubjectList(prepStudySubjectsViewModel);
 
-                  if(snapshot.connectionState == ConnectionState.done && snapshot.hasError){
-                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                      if(snapshot.error == ValidationException){
-                        ValidationException error = snapshot.error as ValidationException;
-                        appToast?.showToast(message: "${error.message}");
-                      }else{
-                        appToast?.showToast(message: "${snapshot.error}");
-                      }
-                    });
-
-                    print("${snapshot.error}");
-                    return Center(
-                      child: AppButton(
-                        title: "Load Subjects",
-                        width: 197,
-                        color: true,
-                        onTap: () => {
-                          setState(() {})
-                        },
-                      ),
-                    );
-                  }
-
-                  return Center(
-                    child: SizedBox(
-                      height: 30,
-                      width: 30,
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
                 },
 
               ),
@@ -124,7 +97,21 @@ class _PodcastPrepStudyScreenState extends State<PodcastPrepStudyScreen> {
   }
 
 
-  _buildSubjectList(List<Subject> studentSubjects) {
+  _buildSubjectList(PrepStudySubjectsViewModel prepStudySubjectsViewModel) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if(prepStudySubjectsViewModel.shouldTakeUserToSubscriptionScreen){
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => SubscriptionScreen()));
+        return;
+      }
+
+      if(prepStudySubjectsViewModel.userShouldSelectExamBoard){
+        UserExamsBottomSheet.showExamBoardBottomSheet(context,prepStudySubjectsViewModel.userExamList).then((value){
+          prepStudySubjectsViewModel.loadExamSubjects(value);
+        });
+      }
+    });
+    List<Subject> studentSubjects = prepStudySubjectsViewModel.studentSubjects;
     return ListView.separated(
       padding: EdgeInsets.all(15.0),
       itemCount: studentSubjects.length,
@@ -161,5 +148,32 @@ class _PodcastPrepStudyScreenState extends State<PodcastPrepStudyScreen> {
     }
 
     return name.substring(0,2).toUpperCase();
+  }
+
+  Widget _buildErrorWidget(PrepStudySubjectsViewModel prepStudySubjectsViewModel) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      appToast?.showToast(message: "${prepStudySubjectsViewModel.errorMessage}");
+    });
+
+    return Center(
+      child: AppButton(
+        title: "Load Subjects",
+        width: 197,
+        color: true,
+        onTap: () => {
+          setState(() {})
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return Center(
+      child: SizedBox(
+        height: 30,
+        width: 30,
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 }

@@ -237,6 +237,9 @@ class _HomeReportScreenState extends State<HomeReportScreen> {
                       }on ValidationException catch(e){
                         progressDialog.close();
                         appToast?.showToast(message: e.message);
+                      }on LoginException catch(e){
+                        progressDialog.close();
+                        appToast?.showToast(message: e.message);
                       }catch(e){
                         progressDialog.close();
                         appToast?.showToast(message: e.toString().substring(11));

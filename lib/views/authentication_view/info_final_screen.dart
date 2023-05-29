@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/text.dart';
-import 'package:prep50/view-models/welcome-screen-viewmodel.dart';
 import 'package:prep50/widgets/app_button.dart';
-import 'package:provider/provider.dart';
 class InfoFinal extends StatefulWidget {
   @override
   State<InfoFinal> createState() => _InfoFinalState();

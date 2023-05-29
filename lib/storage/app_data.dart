@@ -134,4 +134,24 @@ class AppData {
     return prefs.getString("login_username")??"";
   }
 
+  saveApiTokenExpiryDate(String accessTokenExpiryDate)async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("access_expires_at", accessTokenExpiryDate);
+  }
+
+  Future<String> getApiTokenExpiryDate()async{
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("access_expires_at")??"";
+  }
+
+  saveApiRefreshTokenExpiryDate(String refreshTokenExpiryDate) async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("refresh_expires_at", refreshTokenExpiryDate);
+  }
+
+  Future<String> getApiRefreshTokenExpiryDate()async{
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("refresh_expires_at")??"";
+  }
+
 }

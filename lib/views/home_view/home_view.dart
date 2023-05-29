@@ -1,15 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:prep50/utils/color.dart';
+import 'package:prep50/utils/exceptions.dart';
 import 'package:prep50/utils/preps_icons_icons.dart';
 import 'package:prep50/views/authentication_view/login_screen.dart';
 import 'package:prep50/views/cafe/cafe_Screen.dart';
-import 'package:prep50/views/cbt_view/quiz_view/quiz_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../view-models/home_screen_view_model.dart';
+import '../mock_exam/mock_exam_screen.dart';
 import '../prep_study_view/tutorial_view/prep_study_screen.dart';
 import '../weekly_quiz/join_quiz_screen.dart';
 import 'components/logout_dialog.dart';
@@ -37,7 +38,7 @@ class HomeViewState extends State<HomeView>{
   List<Widget> _buildScreens() {
     return [
       HomeScreen(),
-      PrepStudyScreen(),
+      MockExamScreen(),
       CafeScreen(),
       // HomeCard(),
       JoinQuizScreen(),
@@ -171,7 +172,9 @@ class HomeViewState extends State<HomeView>{
     FirebaseMessaging.instance.onTokenRefresh
         .listen((fcmToken) async{
       HomeScreenViewModel homeScreenViewModel = Provider.of<HomeScreenViewModel>(context,listen: false);
-      await homeScreenViewModel.registerFcmToken(fcmToken);
+      try{
+        await homeScreenViewModel.registerFcmToken(fcmToken);
+      }on LoginException catch(e){}catch(e){}
     });
   }
 }

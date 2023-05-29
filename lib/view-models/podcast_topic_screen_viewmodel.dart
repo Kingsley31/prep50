@@ -36,14 +36,17 @@ class PodcastTopicScreenViewModel extends ChangeNotifier{
     _isLoadingTopics = true;
     _hasError=false;
     notifyListeners();
-    String accessCode = await _appData.getToken() ?? "";
     try{
-      List<PodcastTopic> topicList = await _subjectService.getSubjectTopicsAndPodcasts(subjectId, accessCode);
+      List<PodcastTopic> topicList = await _subjectService.getSubjectTopicsAndPodcasts(subjectId);
       _topicList.clear();
       _topicList.addAll(topicList);
       _allTopicList.clear();
       _allTopicList.addAll(topicList);
       _isLoadingTopics=false;
+      notifyListeners();
+    }on LoginException catch(e){
+      _hasError=true;
+      _errorMessage=e.message;
       notifyListeners();
     } on ValidationException catch(e){
       _hasError=true;

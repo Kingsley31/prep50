@@ -1,4 +1,4 @@
-import 'dart:io';
+
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -17,15 +17,18 @@ import 'package:prep50/view-models/login_screen_viewmodel.dart';
 import 'package:prep50/view-models/news_feed_list_screen_viewmodel.dart';
 import 'package:prep50/view-models/notifications_screen_viewmodel.dart';
 import 'package:prep50/view-models/password_reset_screen_viewmodel.dart';
+import 'package:prep50/view-models/payment_screen_viewmodel.dart';
 import 'package:prep50/view-models/podcast_screen_viewmodel.dart';
 import 'package:prep50/view-models/podcast_topic_screen_viewmodel.dart';
 import 'package:prep50/view-models/prep-study-subjects-viewmodel.dart';
 import 'package:prep50/view-models/quiz-question-screen-viewmodel.dart';
+import 'package:prep50/view-models/referral_screen_viewmodel.dart';
 import 'package:prep50/view-models/report_screen_viewmodel.dart';
 import 'package:prep50/view-models/security_and_privacy_screen_viewmodel.dart';
 import 'package:prep50/view-models/single_feed_screen_viewmodel.dart';
 import 'package:prep50/view-models/study-screen-viewmodel.dart';
 import 'package:prep50/view-models/subject_reselection_screen_viewmodel.dart';
+import 'package:prep50/view-models/subscription_screen_viewmodel.dart';
 import 'package:prep50/view-models/support_screen_viewmodel.dart';
 import 'package:prep50/view-models/terms_of_service_screen_viewmodel.dart';
 import 'package:prep50/view-models/topic_screen_viewmodel.dart';
@@ -75,14 +78,23 @@ void main() async{
             ChangeNotifierProvider(create: (create)=>SubjectReselectionScreenViewModel()),
             ChangeNotifierProvider(create: (create)=> SecurityAndPrivacyScreenViewModel()),
             ChangeNotifierProvider(create: (create)=>ChangePasswordScreenViewModel()),
-            ChangeNotifierProvider(create: (create) => ExamBoardBottomSheetViewModel())
+            ChangeNotifierProvider(create: (create) => ExamBoardBottomSheetViewModel()),
+            ChangeNotifierProvider(create: (create)=>ReferralScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => SubscriptionScreenViewModel()),
+            ChangeNotifierProvider(create: (create) => PaymentScreenViewModel())
           ],
           child: MyApp()
       )
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
   final sessionConfig = SessionConfig(
       invalidateSessionForAppLostFocus: const Duration(seconds: 15),
       invalidateSessionForUserInactivity: const Duration(seconds: 30));
@@ -110,16 +122,19 @@ class MyApp extends StatelessWidget {
     Navigator.push(context, MaterialPageRoute(builder: (context)=> NotificationScreen()));
   }
 
-
+  @override
+  void initState(){
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    _listenForSessionTimeOut(context);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp)async {
+      await setupInteractedMessage(context);
       requestPushNotificationPermissionOnIos();
-      setupInteractedMessage(context);
+      _listenForSessionTimeOut(context);
+      listenForForegroundFcmMessages();
     });
-    listenForForegroundFcmMessages();
     return SessionTimeoutManager(
       sessionConfig: sessionConfig,
       child: MaterialApp(
@@ -177,7 +192,6 @@ class MyApp extends StatelessWidget {
       }
     });
   }
-
 
 
 }

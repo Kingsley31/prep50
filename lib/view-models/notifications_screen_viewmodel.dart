@@ -1,13 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:prep50/services/notification_service.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 import '../models/notification_list_item.dart';
 
 class NotificationsScreenViewModel extends ChangeNotifier{
-  AppData _appData = AppData();
   NotificationService _notificationService = NotificationService();
   List<NotificationListItem> _notificationList = [];
   bool _isLoadingNotifications = false;
@@ -29,10 +27,13 @@ class NotificationsScreenViewModel extends ChangeNotifier{
     _isLoadingNotifications=true;
     _errorMessage="";
     notifyListeners();
-    String accessCode = await _appData.getToken()??"";
     try{
-      _notificationList = await _notificationService.getAllUserNotifications(accessCode: accessCode);
+      _notificationList = await _notificationService.getAllUserNotifications();
       _notificationList.add(NotificationListItem("", "", "", "", "", false));
+      _isLoadingNotifications=false;
+      notifyListeners();
+    }on LoginException catch(e){
+      _errorMessage=e.message;
       _isLoadingNotifications=false;
       notifyListeners();
     }on ValidationException catch(e){

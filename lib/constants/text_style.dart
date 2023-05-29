@@ -48,7 +48,8 @@ TextStyle heading6RegularStyle = GoogleFonts.sarabun(
     fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: -0.04);
 TextStyle heading6SemiBoldStyle = GoogleFonts.sarabun(
     fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: -0.04);
-
+TextStyle tinyTextStyleRegular = GoogleFonts.sarabun(
+    fontSize: 9, fontWeight: FontWeight.w400, letterSpacing: -0.04);
 TextStyle captionTextStyleRegular = GoogleFonts.sarabun(
     fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: -0.04);
 TextStyle captionTextStyleMedium = GoogleFonts.sarabun(

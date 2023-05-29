@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../view-models/join_quiz_screen_viewmodel.dart';
 import '../../widgets/app_toast.dart';
+import '../subscription/subscription_screen.dart';
 
 
 
@@ -114,7 +115,15 @@ class _JoinQuizScreenState extends State<JoinQuizScreen> {
             SizedBox(height: 15),
             Consumer<JoinQuizScreenViewModel>(
               builder: (context,joinQuizScreenViewModel,child) {
+
                 if(joinQuizScreenViewModel.showJoinQuizButton){
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                    if(joinQuizScreenViewModel.shouldTakeUserToSubscriptionScreen){
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => SubscriptionScreen()));
+                      return;
+                    }
+                  });
                   return Center(
                       child: AppButton(
                         title: "Join Quiz",

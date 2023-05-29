@@ -6,6 +6,7 @@ import 'package:prep50/models/subject.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 import '../models/topic.dart';
+import '../utils/prep50_api_utils.dart';
 
 class SubjectService{
 
@@ -42,12 +43,13 @@ class SubjectService{
     }
   }
 
-  Future<List<Subject>> getUserExamSubjects(String exam,String accessCode) async {
+  Future<List<Subject>> getUserExamSubjects(String exam) async {
+    final String accessToken = await getApiToken();
     final String userExamSubjectsEndpoint = "/study/subjects";
     final response = await http.post(
       Uri.parse('$baseUrl$userExamSubjectsEndpoint'),
       headers: <String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String,dynamic>{
@@ -63,17 +65,20 @@ class SubjectService{
       final List<Subject> subjectList = subjectListJson.map((subjectJson) => Subject.fromJson(subjectJson)).toList();
       return subjectList;
     }
+    print(response.statusCode);
+    print(response.body);
 
     throw ValidationException(message: "Error fetching subject, is the device online", errors: []);
   }
 
 
-  Future<List<Topic>> getSubjectTopicsAndLessons(int subject_id,String accessCode) async {
+  Future<List<Topic>> getSubjectTopicsAndLessons(int subject_id) async {
+    final String accessToken = await getApiToken();
     final topicsAndLessonsEndpoint = "/study/topics";
     final response = await http.post(
         Uri.parse('$baseUrl$topicsAndLessonsEndpoint'),
       headers: < String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String,dynamic>{
@@ -98,13 +103,14 @@ class SubjectService{
 
   }
 
-  Future<List<PodcastTopic>> getSubjectTopicsAndPodcasts(int subject_id,String accessCode) async {
+  Future<List<PodcastTopic>> getSubjectTopicsAndPodcasts(int subject_id) async {
+    final String accessToken = await getApiToken();
     final topicsAndLessonsEndpoint = "/study/podcast?subject=$subject_id";
     print(subject_id);
     final response = await http.get(
       Uri.parse('$baseUrl$topicsAndLessonsEndpoint'),
       headers: < String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
     );

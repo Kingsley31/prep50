@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:prep50/models/comment.dart';
+import 'package:prep50/models/news_feed.dart';
 import 'package:prep50/models/news_feed_list_item.dart';
 import 'package:prep50/utils/color.dart';
+import 'package:prep50/utils/deeplink_utils.dart';
 import 'package:prep50/view-models/news_feed_list_screen_viewmodel.dart';
 import 'package:prep50/views/home_view/components/comment_card.dart';
 import 'package:prep50/views/home_view/components/feed_card.dart';
@@ -11,7 +13,6 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
-import '../../constants/string_data.dart';
 import '../../utils/exceptions.dart';
 import '../../utils/text.dart';
 import '../../view-models/single_feed_screen_viewmodel.dart';
@@ -21,8 +22,9 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_toast.dart';
 
 class SingleFeedScreen extends StatefulWidget {
-  final NewsFeedListItem newsFeedListItem;
-  const SingleFeedScreen({Key? key,required this.newsFeedListItem}) : super(key: key);
+  final NewsFeedListItem? newsFeedListItem;
+  final String? slug;
+  const SingleFeedScreen({Key? key,this.newsFeedListItem,this.slug}) : super(key: key);
 
   @override
   State<SingleFeedScreen> createState() => _SingleFeedScreenState();
@@ -34,18 +36,21 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
   AppToast? appToast;
 
 
+
+
   @override
   void initState() {
     super.initState();
     appToast=AppToast(context: context);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       SingleFeedScreenViewModel singleFeedScreenViewModel = Provider.of<SingleFeedScreenViewModel>(context,listen: false);
-      singleFeedScreenViewModel.loadNewsFeed(widget.newsFeedListItem.slug);
+      singleFeedScreenViewModel.loadNewsFeed(widget.newsFeedListItem!=null?widget.newsFeedListItem!.slug:widget.slug!);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.slug);
     NewsFeedListScreenViewModel newsFeedListScreenViewModel = Provider.of<NewsFeedListScreenViewModel>(context,listen: false);
     SingleFeedScreenViewModel singleFeedScreenViewModel = Provider.of<SingleFeedScreenViewModel>(context,listen: false);
     final ProgressDialog progressDialog = ProgressDialog(context:context);
@@ -64,43 +69,13 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
                     width: 17,
                   ),
                   Expanded(
-                      child: AppText.heading6S("${widget.newsFeedListItem.title}"),
+                      child: widget.newsFeedListItem!=null?_buildTitleWidget(widget.newsFeedListItem!):_buildFutureTitleWidget(),
                   ),
                 ],
               ),
             ),
             Divider(height: 2,),
-            FeedCard(
-              newsFeedListItem: widget.newsFeedListItem,
-              onBookmarkButtonClicked: (isBookmarked,slug){
-                try{
-                  newsFeedListScreenViewModel.bookmarkFeed(slug, isBookmarked);
-                }on ValidationException catch(e){
-                  appToast?.showToast(message: e.message);
-                }catch(e){
-                  appToast?.showToast(message: e.toString().substring(11));
-                }
-              },
-              onLikeButtonClicked:(isLiked,slug){
-                try{
-                  newsFeedListScreenViewModel.likeFeed(slug, isLiked);
-                }on ValidationException catch(e){
-                  appToast?.showToast(message: e.message);
-                }catch(e){
-                  appToast?.showToast(message: e.toString().substring(11));
-                }
-              },
-              onReportButtonClicked: (newsFeedListItem)async{
-                final reported = await ReportDialog.show(context,isFeed: true,slug: newsFeedListItem.slug);
-                if(reported!=null && reported==true){
-                  appToast?.showReportSuccessToast();
-                }
-              },
-              onShareButtonClicked: (newsFeedListItem){
-                //Open Share Dialog
-                Share.share('$BASE_URL/newsfeed/view?slug=${newsFeedListItem.slug} \n\n${newsFeedListItem.content}', subject: 'Share Feed');
-              },
-            ),
+            widget.newsFeedListItem!=null?_buildFeedCard(widget.newsFeedListItem!,newsFeedListScreenViewModel):_buildFutureFeedCard(newsFeedListScreenViewModel),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
               width: double.infinity,
@@ -133,6 +108,7 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
                           hText: "Enter Comment",
                           validator: (value){
                             if(value==null || value.isEmpty) return "Please enter comment";
+                            return null;
                           },
                         onChanged: (value){
                           setState(() {});
@@ -154,12 +130,15 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
                           elevation: 10.0,
                           );
                           try{
-                            await singleFeedScreenViewModel.postComment(commentController.text, widget.newsFeedListItem.slug);
+                            await singleFeedScreenViewModel.postComment(commentController.text, widget.newsFeedListItem!=null?widget.newsFeedListItem!.slug:widget.slug!);
                             commentController.text="";
                             progressDialog.close();
                             appToast?.showToast(message: "Comment posted successfully");
                             setState(() {});
-                            singleFeedScreenViewModel.loadNewsFeed(widget.newsFeedListItem.slug);
+                            singleFeedScreenViewModel.loadNewsFeed(widget.newsFeedListItem!=null?widget.newsFeedListItem!.slug:widget.slug!);
+                          }on LoginException catch(e){
+                            progressDialog.close();
+                            appToast?.showToast(message: e.message);
                           }on ValidationException catch(e){
                           progressDialog.close();
                           appToast?.showToast(message: e.message);
@@ -193,7 +172,7 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
         width: 197,
         color: true,
         onTap: () => {
-          singleFeedScreenViewModel.loadNewsFeed(widget.newsFeedListItem.slug)
+          singleFeedScreenViewModel.loadNewsFeed(widget.newsFeedListItem!=null?widget.newsFeedListItem!.slug:widget.slug!)
         },
       ),
     );
@@ -210,15 +189,27 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
   }
 
  Widget _buildCommentList(SingleFeedScreenViewModel singleFeedScreenViewModel) {
+    final NewsFeed newsFeed=singleFeedScreenViewModel.newsFeed;
+   final NewsFeedListItem newsFeedListItem = NewsFeedListItem(
+       newsFeed.slug,
+       newsFeed.title,
+       newsFeed.photo,
+       newsFeed.content,
+       newsFeed.createdAt,
+       newsFeed.updatedAt,
+       newsFeed.likes,
+       newsFeed.comments.length,
+       newsFeed.isLiked,
+       newsFeed.isBookmarked);
     return ListView.builder(
-      itemCount: singleFeedScreenViewModel.newsFeed.comments.length,
+      itemCount: newsFeed.comments.length,
         itemBuilder: (context,index){
-          return _buildCommentCard(singleFeedScreenViewModel.newsFeed.comments[index]);
+          return _buildCommentCard(newsFeed.comments[index],newsFeedListItem);
         }
     );
  }
 
-  Widget _buildCommentCard(Comment comment) {
+  Widget _buildCommentCard(Comment comment,NewsFeedListItem newsFeedListItem) {
     return CommentCard(
       comment: comment,
       onReportButtonClicked: (comment)async{
@@ -227,12 +218,106 @@ class _SingleFeedScreenState extends State<SingleFeedScreen> {
           appToast?.showReportSuccessToast();
         }
       },
-      onShareButtonClicked: (newsFeedListItem){
-        //Open Share Dialog
-        Share.share('$BASE_URL/newsfeed/view?slug=${widget.newsFeedListItem.slug} \n\n${comment.comment}', subject: 'Share Comment');
+      onShareButtonClicked: (comment)async{
+        try{
+          String postLink = await buildFeedLink(newsFeedListItem.slug);
+          //Open Share Dialog
+          Share.share('$postLink \n\n${comment.comment}', subject: 'Share Comment');
+        }catch(e){
+          appToast?.showToast(message: "unable to load link please ensure your device is online and try again");
+        }
       },
     );
   }
+
+ Widget _buildFeedCard(NewsFeedListItem newsFeedListItem,NewsFeedListScreenViewModel newsFeedListScreenViewModel) {
+    return  FeedCard(
+      newsFeedListItem: newsFeedListItem,
+      onBookmarkButtonClicked: (isBookmarked,slug){
+        try{
+          newsFeedListScreenViewModel.bookmarkFeed(slug, isBookmarked);
+        }on LoginException catch(e){
+          appToast?.showToast(message: e.message);
+        }on ValidationException catch(e){
+          appToast?.showToast(message: e.message);
+        }catch(e){
+          appToast?.showToast(message: e.toString().substring(11));
+        }
+      },
+      onLikeButtonClicked:(isLiked,slug){
+        try{
+          newsFeedListScreenViewModel.likeFeed(slug, isLiked);
+        }on LoginException catch(e){
+          appToast?.showToast(message: e.message);
+        }on ValidationException catch(e){
+          appToast?.showToast(message: e.message);
+        }catch(e){
+          appToast?.showToast(message: e.toString().substring(11));
+        }
+      },
+      onReportButtonClicked: (newsFeedListItem)async{
+        final reported = await ReportDialog.show(context,isFeed: true,slug: newsFeedListItem.slug);
+        if(reported!=null && reported==true){
+          appToast?.showReportSuccessToast();
+        }
+      },
+      onShareButtonClicked: (newsFeedListItem)async{
+        try{
+          String postLink = await buildFeedLink(newsFeedListItem.slug);
+          Share.share('$postLink \n\n${newsFeedListItem.content}', subject: 'Share Feed');
+        }catch(e){
+          appToast?.showToast(message: "unable to load link please ensure your device is online and try again");
+        }
+        //Open Share Dialog
+
+      },
+    );
+ }
+
+ Widget _buildFutureFeedCard(NewsFeedListScreenViewModel newsFeedListScreenViewModel) {
+    return Consumer<SingleFeedScreenViewModel>(
+      builder: (context,singleFeedScreenViewModel,child){
+        return singleFeedScreenViewModel.errorMessage.isEmpty && singleFeedScreenViewModel.isLoadingFeed==false?
+        _buildFeedCard(NewsFeedListItem(
+            singleFeedScreenViewModel.newsFeed.slug,
+            singleFeedScreenViewModel.newsFeed.title,
+            singleFeedScreenViewModel.newsFeed.photo,
+            singleFeedScreenViewModel.newsFeed.content,
+            singleFeedScreenViewModel.newsFeed.createdAt,
+            singleFeedScreenViewModel.newsFeed.updatedAt,
+            singleFeedScreenViewModel.newsFeed.likes,
+            singleFeedScreenViewModel.newsFeed.comments.length,
+            singleFeedScreenViewModel.newsFeed.isLiked,
+            singleFeedScreenViewModel.newsFeed.isBookmarked), newsFeedListScreenViewModel):
+        _buildLoadingWidget();
+      },
+    );
+ }
+
+ Widget _buildTitleWidget(NewsFeedListItem newsFeedListItem) {
+    print(newsFeedListItem.title);
+    return AppText.heading6S("${newsFeedListItem.title}");
+ }
+
+ Widget _buildFutureTitleWidget() {
+   return Consumer<SingleFeedScreenViewModel>(
+     builder: (context,singleFeedScreenViewModel,child){
+       return singleFeedScreenViewModel.errorMessage.isEmpty && singleFeedScreenViewModel.isLoadingFeed==false?
+       _buildTitleWidget(NewsFeedListItem(
+           singleFeedScreenViewModel.newsFeed.slug,
+           singleFeedScreenViewModel.newsFeed.title,
+           singleFeedScreenViewModel.newsFeed.photo,
+           singleFeedScreenViewModel.newsFeed.content,
+           singleFeedScreenViewModel.newsFeed.createdAt,
+           singleFeedScreenViewModel.newsFeed.updatedAt,
+           singleFeedScreenViewModel.newsFeed.likes,
+           singleFeedScreenViewModel.newsFeed.comments.length,
+           singleFeedScreenViewModel.newsFeed.isLiked,
+           singleFeedScreenViewModel.newsFeed.isBookmarked)):
+       Container(height: 2,width: 2,);
+     },
+   );
+ }
 
 
 

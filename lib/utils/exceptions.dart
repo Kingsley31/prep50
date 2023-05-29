@@ -12,3 +12,8 @@ class WeeklyQuizException implements Exception{
   String message;
   WeeklyQuizException({required this.message});
 }
+
+class LoginException implements Exception{
+  String message;
+  LoginException({required this.message});
+}

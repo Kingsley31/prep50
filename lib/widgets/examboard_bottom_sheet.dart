@@ -98,7 +98,7 @@ class _ExamBoardsBottomSheetState extends State<ExamBoardsBottomSheet> {
                     );
                   }
 
-                  if (examBoardBottomSheetViewModel.isLoadingExamBoard==false) {
+                  if (examBoardBottomSheetViewModel.isLoadingExamBoard==false && examBoardBottomSheetViewModel.examBoardList.isNotEmpty) {
                     List<ExamBoard> examBoardsList = examBoardBottomSheetViewModel.examBoardList;
                     InfoScreenViewModel infoScreenViewModel =
                         Provider.of<InfoScreenViewModel>(context,
@@ -156,7 +156,12 @@ class _ExamBoardsBottomSheetState extends State<ExamBoardsBottomSheet> {
                           color: true,
                           width: 150,
                           onTap: () {
-                              Navigator.pop(context, selectedExamBoard);
+                              if(selectedExamBoard.isEmpty){
+                                selectedExamBoard=examBoardsStringList.first;
+                              }
+                              List<ExamBoard> examBoardsList = examBoardBottomSheetViewModel.examBoardList;
+                              ExamBoard examBoard = examBoardsList.firstWhere((eb) => eb.name == selectedExamBoard);
+                              Navigator.pop(context, examBoard);
                           },
                         ),
                       ],

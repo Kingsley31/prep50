@@ -54,18 +54,21 @@ class EditProfileScreenViewModel extends ChangeNotifier{
 
   Future<LoginResponse> updateUserProfile({required String phone,required String gender,required String address})async{
     String photo="";
-    String accessCode= await _appData.getToken()??"";
      if(_imageFile!=null){
-       final uploadResponseJson= await _authService.uploadUserProfilePicture(accessCode: accessCode, imageFile: _imageFile!);
+       final uploadResponseJson= await _authService.uploadUserProfilePicture(imageFile: _imageFile!);
        photo=uploadResponseJson["photo"];
      }
-    LoginResponse loginResponse = await _authService.updateUserProfile(accessCode: accessCode, phone: phone, address: address, gender: gender,photo:photo);
+    LoginResponse loginResponse = await _authService.updateUserProfile( phone: phone, address: address, gender: gender,photo:photo);
     _user = loginResponse.user;
     final String accessToken = loginResponse.accessCode;
     final String refreshToken = loginResponse.refreshToken;
+    final String accessTokenExpiryDate=loginResponse.accessExpiresAt;
+    final String refreshTokenExpiryDate = loginResponse.refreshExpiresAt;
     await _appData.saveUser(_user.toJson());
     await _appData.saveApiToken(accessToken);
     await _appData.saveApiRefreshToken(refreshToken);
+    await _appData.saveApiTokenExpiryDate(accessTokenExpiryDate);
+    await _appData.saveApiRefreshTokenExpiryDate(refreshTokenExpiryDate);
     notifyListeners();
     return loginResponse;
   }

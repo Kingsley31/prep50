@@ -6,11 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:prep50/models/question.dart';
 import 'package:prep50/models/weekly_quiz.dart';
 import 'package:prep50/services/quiz-service.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 class WeeklyQuizQuestionScreenViewModel extends ChangeNotifier{
-  AppData _appData = AppData();
   QuizService _quizService = QuizService();
   Map<String,String> _userAnswers = Map();
   List<Question> _questions=[];
@@ -145,8 +143,7 @@ class WeeklyQuizQuestionScreenViewModel extends ChangeNotifier{
 
   Future<int> submitQuizScore() async {
     _quizTimer.cancel();
-    String accessCode = await _appData.getToken() ?? "";
-    _score = await _quizService.submitUserWeeklyQuizAnswers(userAnswers: _userAnswers, accessCode: accessCode);
+    _score = await _quizService.submitUserWeeklyQuizAnswers(userAnswers: _userAnswers);
     print(_score);
     return _score;
   }

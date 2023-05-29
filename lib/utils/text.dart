@@ -104,6 +104,10 @@ class AppText extends StatelessWidget {
       {color: Colors.black, this.multiText: false, this.centered: false})
       : style = captionTextStyleSemiBold.copyWith(color: color);
 
+  AppText.tinyText(this.text,
+      {color: Colors.black, this.multiText: false, this.centered: false})
+      : style = tinyTextStyleRegular.copyWith(color: color);
+
   @override
   Widget build(BuildContext context) {
     return Text(

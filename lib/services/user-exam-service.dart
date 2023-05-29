@@ -5,16 +5,19 @@ import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/models/user_exam.dart';
 import 'package:prep50/utils/exceptions.dart';
 
+import '../utils/prep50_api_utils.dart';
+
 class UserExamService{
   String baseUrl = BASE_URL;
 
 
-  Future<List<UserExam>> getUserExams(String accessCode) async {
+  Future<List<UserExam>> getUserExams() async {
+    final String accessToken = await getApiToken();
     String userExamBoardEndpoint = "/user/exams";
     final response = await http.get(
       Uri.parse('$baseUrl$userExamBoardEndpoint'),
       headers: <String, String>{
-        'Authorization': 'Bearer $accessCode',
+        'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
     );

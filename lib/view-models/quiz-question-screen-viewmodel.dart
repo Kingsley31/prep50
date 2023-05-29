@@ -6,7 +6,6 @@ import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 class QuizQuestionScreenViewModel extends ChangeNotifier{
-  AppData _appData = AppData();
   QuizService _quizService = QuizService();
   List<Question> _questions=[];
   late Question _currentQuestion;
@@ -68,9 +67,8 @@ class QuizQuestionScreenViewModel extends ChangeNotifier{
     _errorMessage="";
     _objectiveId=objectiveId;
     notifyListeners();
-    String accessCode = await _appData.getToken() ?? "";
     try{
-      List<Question> questions = await _quizService.getObjectiveQuickQuiz(accessCode: accessCode, objectiveId: objectiveId);
+      List<Question> questions = await _quizService.getObjectiveQuickQuiz(objectiveId: objectiveId);
       _questions.clear();
       _questions.addAll(questions);
       if(questions.length ==0){
@@ -85,6 +83,10 @@ class QuizQuestionScreenViewModel extends ChangeNotifier{
       _numberOfAttemptedQuestions=0;
       _totalCorrectAnswers=0;
       _percentageScore = 0;
+      notifyListeners();
+    }on LoginException catch(e){
+      _isLoadingQuestions=false;
+      _errorMessage = e.message;
       notifyListeners();
     }on ValidationException catch(e){
       _isLoadingQuestions=false;
@@ -125,8 +127,7 @@ class QuizQuestionScreenViewModel extends ChangeNotifier{
   }
 
   Future<Map<String,dynamic>> submitQuizScore() async {
-    String accessCode = await _appData.getToken() ?? "";
-    final response = await _quizService.submitObjectiveQuizScore(percentageScore: _percentageScore, objectiveId: _objectiveId, accessCode: accessCode);
+    final response = await _quizService.submitObjectiveQuizScore(percentageScore: _percentageScore, objectiveId: _objectiveId);
     return response;
   }
 

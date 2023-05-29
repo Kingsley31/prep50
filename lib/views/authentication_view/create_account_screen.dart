@@ -1,7 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:prep50/utils/color.dart';
 import 'package:prep50/utils/exceptions.dart';
 import 'package:prep50/utils/text.dart';
@@ -16,7 +15,13 @@ import 'package:prep50/validators/basic-form-validators.dart' as registrationVal
 import 'package:provider/provider.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 
+import '../../utils/third-party-login-info-validator.dart';
+import '../../view-models/login_screen_viewmodel.dart';
+import '../home_view/home_view.dart';
+
 class CreateAccount extends StatefulWidget {
+  const CreateAccount({Key? key,this.refererUserName}):super(key: key);
+  final String? refererUserName;
   @override
   State<CreateAccount> createState() => _CreateAccountState();
 }
@@ -28,6 +33,7 @@ class _CreateAccountState extends State<CreateAccount> {
   final TextInputType emailInputType = TextInputType.emailAddress;
   final TextInputType nameInputType = TextInputType.name;
   final TextInputType passwordInputType = TextInputType.visiblePassword;
+  final TextEditingController refererController = TextEditingController();
 
 
 
@@ -41,6 +47,7 @@ class _CreateAccountState extends State<CreateAccount> {
   @override
   Widget build(BuildContext context) {
     CreateAccountViewModel createAccountViewModel = Provider.of<CreateAccountViewModel>(context, listen: false);
+    LoginScreenViewModel loginScreenViewModel = Provider.of<LoginScreenViewModel>(context, listen: false);
     final ProgressDialog progressDialog = ProgressDialog(context:context);
     return Scaffold(
       body: Padding(
@@ -95,22 +102,102 @@ class _CreateAccountState extends State<CreateAccount> {
                     Row(
                       children: [
                         Expanded(
-                            child: SvgButton(
+                            child: GestureDetector(
+                              child: SvgButton(
                           title: "Facebook",
                           width: 159,
                           assets: "assets/svg/facebook.svg",
                           color: kInfoColor,
-                        )),
+                        ),
+                              onTap: ()async {
+                                try{
+                                  progressDialog.show(
+                                    max: 100,
+                                    msg: 'Login in...',
+                                    msgColor: Colors.black,
+                                    progressValueColor: kPrimaryColor,
+                                    borderRadius: 10.0,
+                                    backgroundColor: Colors.white,
+                                    barrierDismissible: false,
+                                    elevation: 10.0,
+                                  );
+                                  final userCredentials = await loginScreenViewModel.signInWithFacebook();
+                                  final ThirdPartyLoginInfo thirdPartyLoginInfo = await ThirdPartyLoginInfoValidator.validate(context, userCredentials.user?.displayName, userCredentials.user?.email, userCredentials.user?.phoneNumber);
+                                  final loginResponse = await loginScreenViewModel.authenticateApiWithFacebookDetails(thirdPartyLoginInfo.username, thirdPartyLoginInfo.phoneNumber, thirdPartyLoginInfo.email);
+                                  progressDialog.close();
+                                  if(loginResponse.user.hasRegisteredExam){
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
+                                    return;
+                                  }
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                          builder: (context) => InfoScreen()));
+                                }on ValidationException catch(e){
+                                  progressDialog.close();
+                                  appToast?.showToast(message: e.message);
+                                  print(e.toString());
+                                }on FirebaseAuthException catch(e){
+                                  progressDialog.close();
+                                  appToast?.showToast(message: e.message??"Failed to authenticate with facebook, try email/password signing.");
+                                  print(e.toString());
+                                }catch(e){
+                                  progressDialog.close();
+                                  appToast?.showToast(message: e.toString().substring(11));
+                                  print(e.toString());
+                                }
+                              },
+                            )),
                         SizedBox(
                           width: 25,
                         ),
                         Expanded(
-                            child: SvgButton(
+                            child: GestureDetector(
+                              child: SvgButton(
                           title: "Google",
                           width: 159,
                           assets: "assets/svg/googleicons.svg",
                           // color: false,
-                        ))
+                        ),
+                              onTap: ()async {
+                                try{
+                                  progressDialog.show(
+                                    max: 100,
+                                    msg: 'Login in...',
+                                    msgColor: Colors.black,
+                                    progressValueColor: kPrimaryColor,
+                                    borderRadius: 10.0,
+                                    backgroundColor: Colors.white,
+                                    barrierDismissible: false,
+                                    elevation: 10.0,
+                                  );
+                                  final userCredentials = await loginScreenViewModel.signInWithGoogle();
+                                  final ThirdPartyLoginInfo thirdPartyLoginInfo = await ThirdPartyLoginInfoValidator.validate(context, userCredentials.user?.displayName, userCredentials.user?.email, userCredentials.user?.phoneNumber);
+                                  final loginResponse = await loginScreenViewModel.authenticateApiWithGoogleDetails(thirdPartyLoginInfo.username, thirdPartyLoginInfo.phoneNumber, thirdPartyLoginInfo.email);
+                                  progressDialog.close();
+                                  if(loginResponse.user.hasRegisteredExam){
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(settings:RouteSettings(name: HomeView.routeName),builder: (context) => HomeView()));
+                                    return;
+                                  }
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                          builder: (context) => InfoScreen()));
+                                }on ValidationException catch(e){
+                                  progressDialog.close();
+                                  appToast?.showToast(message: e.message);
+                                  print(e.toString());
+                                }on FirebaseAuthException catch(e){
+                                  progressDialog.close();
+                                  appToast?.showToast(message: e.message??"Failed to authenticate with google, try email/password signing.");
+                                  print(e.toString());
+                                }catch(e){
+                                  progressDialog.close();
+                                  appToast?.showToast(message: e.toString().substring(11));
+                                  print(e.toString());
+                                }
+                              },
+                            ))
                       ],
                     ),
                     SizedBox(
@@ -151,6 +238,7 @@ class _CreateAccountState extends State<CreateAccount> {
                         },
                         maxLines: 1,
                     ),
+                    widget.refererUserName!=null?_buildRefererField(createAccountViewModel):Container(),
                     SizedBox(
                       height: 16,
                     ),
@@ -241,5 +329,35 @@ class _CreateAccountState extends State<CreateAccount> {
       ),
     );
   }
+
+ Widget _buildRefererField(CreateAccountViewModel createAccountViewModel) {
+    createAccountViewModel.setReferer=widget.refererUserName??"";
+    refererController.text=widget.refererUserName??"";
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 16,
+        ),
+        AppText.heading6M("Referer"),
+        SizedBox(
+          height: 4,
+        ),
+        AppTextField(
+          controller: refererController,
+          hText: "Enter your referer username",
+          validator: registrationValidator.nameValidator,
+          textInputType: nameInputType,
+          onChanged: (String value){
+            //Set ViewModel Phone number
+            createAccountViewModel.setReferer=value;
+          },
+          maxLines: 1,
+        ),
+      ],
+    );
+ }
+
+
 
 }

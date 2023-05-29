@@ -1,13 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:prep50/services/quiz-service.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 import '../models/weekly_quiz_participant.dart';
 
 class WeeklyQuizLeaderBoardScreenViewModel extends ChangeNotifier{
-  AppData _appData= AppData();
   QuizService _quizService = QuizService();
   List<WeeklyQuizParticipant> _leaderBoard=[];
   WeeklyQuizParticipant? _highestScoreParticipant;
@@ -41,12 +39,11 @@ class WeeklyQuizLeaderBoardScreenViewModel extends ChangeNotifier{
   }
 
   loadLeaderBoard()async{
-    String accessCode =  await _appData.getToken() ?? "";
      _isLoadingLeaderBoard = true;
      _errorMessage="";
      notifyListeners();
      try{
-       _leaderBoard=await _quizService.getLeaderBoard(accessCode: accessCode);
+       _leaderBoard=await _quizService.getLeaderBoard();
        _leaderBoard.sort((participantA,participantB)=> participantB.score.compareTo(participantA.score));
        if(_leaderBoard.isNotEmpty){
          _highestScoreParticipant = _leaderBoard[0];

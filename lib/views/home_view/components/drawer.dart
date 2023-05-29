@@ -10,6 +10,7 @@ import 'package:prep50/views/home_view/components/logout_dialog.dart';
 import 'package:prep50/views/profile/edit_profile.dart';
 import 'package:prep50/views/referral_screen.dart';
 import 'package:prep50/views/subject_reselection_screen.dart';
+import 'package:prep50/views/subscription/subscription_screen.dart';
 import 'package:prep50/views/terms_of_service_screen.dart';
 import 'package:prep50/widgets/app_button.dart';
 import 'package:provider/provider.dart';
@@ -112,7 +113,7 @@ class AppDrawer extends StatelessWidget {
                   );
                 },
               ),
-              drawerItems(context, PrepsIcons.subscription, "Subscription"),
+              drawerItems(context, PrepsIcons.subscription, "Subscription",page: SubscriptionScreen()),
               drawerItems(context, PrepsIcons.security, "Security & Privacy",
                   page: SecurityAndPrivacyScreen()),
               drawerItems(context, PrepsIcons.subject, "Subjects Re-selection",page: SubjectsReselectScreen()),

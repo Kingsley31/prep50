@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:prep50/models/objective.dart';
 import 'package:prep50/services/subject-service.dart';
-import 'package:prep50/storage/app_data.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 import '../models/topic.dart';
@@ -14,7 +13,6 @@ class TopicScreenViewModel extends ChangeNotifier{
   String _errorMessage="";
   List<Topic> _topicList = [];
   List<Topic> _allTopicList = [];
-  AppData _appData = AppData();
   SubjectService _subjectService = SubjectService();
 
   bool get hasError {
@@ -37,16 +35,19 @@ class TopicScreenViewModel extends ChangeNotifier{
     _isLoadingTopics = true;
     _hasError=false;
     notifyListeners();
-    String accessCode = await _appData.getToken() ?? "";
     try{
-      List<Topic> topicList = await _subjectService.getSubjectTopicsAndLessons(subjectId, accessCode);
+      List<Topic> topicList = await _subjectService.getSubjectTopicsAndLessons(subjectId);
       _topicList.clear();
       _topicList.addAll(topicList);
       _allTopicList.clear();
       _allTopicList.addAll(topicList);
       _isLoadingTopics=false;
       notifyListeners();
-    } on ValidationException catch(e){
+    } on LoginException catch(e){
+      _hasError=true;
+      _errorMessage=e.message;
+      notifyListeners();
+    }on ValidationException catch(e){
       _hasError=true;
       _errorMessage=e.message;
       notifyListeners();

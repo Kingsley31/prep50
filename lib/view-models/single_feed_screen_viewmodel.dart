@@ -4,10 +4,8 @@ import 'package:prep50/models/news_feed.dart';
 import 'package:prep50/utils/exceptions.dart';
 
 import '../services/new_feed_service.dart';
-import '../storage/app_data.dart';
 
 class SingleFeedScreenViewModel extends ChangeNotifier{
-  AppData _appData = AppData();
   NewsFeedService _newsFeedService = NewsFeedService();
   NewsFeed _newsFeed = NewsFeed("", "", "", "", "", "", 0, false, false, []);
   bool _isLoadingFeed = false;
@@ -26,13 +24,16 @@ class SingleFeedScreenViewModel extends ChangeNotifier{
   }
 
   loadNewsFeed(String slug)async{
-    String accessCode = await _appData.getToken()??"";
     _isLoadingFeed=true;
     _errorMessage="";
     notifyListeners();
     try{
-      _newsFeed= await _newsFeedService.getNewsFeed(slug: slug, accessCode: accessCode);
+      _newsFeed= await _newsFeedService.getNewsFeed(slug: slug);
       _isLoadingFeed=false;
+      notifyListeners();
+    }on LoginException catch(e){
+      _isLoadingFeed=false;
+      _errorMessage=e.message;
       notifyListeners();
     }on ValidationException catch(e){
       _isLoadingFeed=false;
@@ -47,8 +48,7 @@ class SingleFeedScreenViewModel extends ChangeNotifier{
   }
 
   Future<Map<String,dynamic>> postComment(String comment,String slug)async{
-    String accessCode = await _appData.getToken()??"";
-    return await _newsFeedService.postComment(slug: slug, comment: comment, accessCode: accessCode);
+    return await _newsFeedService.postComment(slug: slug, comment: comment);
   }
 
 }

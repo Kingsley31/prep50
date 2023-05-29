@@ -266,6 +266,9 @@ Widget  _buildEditProfileWidget(EditProfileScreenViewModel editProfileScreenView
                   progressDialog.close();
                   appToast?.showToast(message: "Profile updated successfully");
 
+                }on LoginException catch(e){
+                  progressDialog.close();
+                  appToast?.showToast(message: e.message);
                 }on ValidationException catch(e){
                   progressDialog.close();
                   appToast?.showToast(message: e.message);

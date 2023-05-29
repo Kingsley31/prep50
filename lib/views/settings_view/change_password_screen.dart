@@ -141,6 +141,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               }on ValidationException catch(e){
                                 _progressDialog.close();
                                 _appToast?.showToast(message: e.message);
+                              }on LoginException catch(e){
+                                _progressDialog.close();
+                                _appToast?.showToast(message: e.message);
                               }catch(e){
                                 _progressDialog.close();
                                 _appToast?.showToast(message: e.toString().substring(11));
