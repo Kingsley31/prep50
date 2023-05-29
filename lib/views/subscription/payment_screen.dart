@@ -49,10 +49,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     userAgent: 'Flutter;Webview',
                     onWebResourceError: (WebResourceError error) async{
                       paymentScreenViewModel.isLoading=true;
-                      if(paymentScreenViewModel.pageLoaded){
-                        await _showPaymentStatusDialog(title: "Error Loading Page", message: "We could not get the payment, please ensure your device is online and try again.");
-                        Navigator.of(context).pop();
-                      }
+                      // if(paymentScreenViewModel.pageLoaded){
+                      //   await _showPaymentStatusDialog(title: "Error Loading Page", message: "We could not get the payment, please ensure your device is online and try again.");
+                      //   Navigator.of(context).pop();
+                      // }
 
                     },
                     onProgress: (progress){
