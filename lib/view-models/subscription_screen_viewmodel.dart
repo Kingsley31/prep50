@@ -2,15 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:prep50/constants/string_data.dart';
 import 'package:prep50/models/user_exam.dart';
+import 'package:prep50/services/payment_service.dart';
 import 'package:prep50/services/user-exam-service.dart';
 import 'package:prep50/utils/exceptions.dart';
 import 'package:prep50/utils/prep50_api_utils.dart';
 
 import '../models/exam_board.dart';
+import '../models/payment_initialization_response.dart';
 import '../models/user.dart';
 import '../services/exam-board-service.dart';
-import '../services/paystack/models/payment_initialization_response.dart';
-import '../services/paystack/paystack_api_service.dart';
 import '../storage/app_data.dart';
 
 class SubscriptionScreenViewModel extends ChangeNotifier{
@@ -18,7 +18,7 @@ class SubscriptionScreenViewModel extends ChangeNotifier{
   String _UTME_TITLE = "UTME Premuim Service";
   String _SSCE_TITLE = "SSCE Premuim Service";
   AppData _appData = AppData();
-  PaystackApiService _paystackApiService= PaystackApiService();
+  PaymentService _paymentService= PaymentService();
   final UserExamService _userExamService = UserExamService();
   final ExamBoardService _examBoardService = ExamBoardService();
   List<UserExam> _userExamList = [];
@@ -77,8 +77,7 @@ class SubscriptionScreenViewModel extends ChangeNotifier{
       if(_showSubscribeNowButton){
         final userJson = await _appData.getUser();
         final User user = User.fromJson(userJson!);
-        String paymentAmount = (_amount*100).toString();
-        PaymentInitializationResponse paymentInitializationResponse= await _paystackApiService.initializePayment(email: user.email!, amount: paymentAmount);
+        PaymentInitializationResponse paymentInitializationResponse= await _paymentService.initializePayment(email: user.email!, amount: _amount);
         _authorizationUrl=paymentInitializationResponse.data.authorizationUrl;
         _paymentReference=paymentInitializationResponse.data.reference;
       }

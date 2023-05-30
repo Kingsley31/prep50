@@ -67,7 +67,8 @@ Future<RefreshTokenResponse> _refreshAccessTokenFromServer(String refreshToken) 
 
 bool checkShouldTakeUserToSubscriptionScreen(List<UserExam> userExamList){
   return userExamList.any((exam) {
-    print(exam.paymentStatus);
+    print("Exam Payment Status: ${exam.paymentStatus}");
+    print("Payment Expiry Date: ${exam.expiryDate}");
     if(exam.paymentStatus==PAYMENT_STATUS_PENDING){
       DateTime examRegistrationDate = DateTime.parse(exam.createdAt).toLocal();
       DateTime currentDate = DateTime.now();

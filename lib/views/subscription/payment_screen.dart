@@ -60,8 +60,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     },
                     navigationDelegate: (navigation)async{
                       print(navigation.url);
+
                       if(navigation.url == 'https://standard.paystack.co/close'){
                         try{
+                          // Uri uri= Uri.parse(navigation.url);
+                          // String trxReference=uri.queryParameters["trxref"]!;
                           bool paymentSuccessful= await paymentScreenViewModel.verifyPayment(paymentType: widget.paymentType,paymentReference: widget.paymentReference);
                           if(paymentSuccessful){
                             await _showPaymentStatusDialog(title: "Payment Successful", message: "Subscription completed successfully, you can now access all premium features of Prep50 app.");
@@ -80,6 +83,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       //Listen for callback URL
                       if(navigation.url.contains(PAYSTACK_CALLBACK_URL)){
                         try{
+                          // Uri uri= Uri.parse(navigation.url);
+                          // String trxReference=uri.queryParameters["trxref"]!;
                           bool paymentSuccessful= await paymentScreenViewModel.verifyPayment(paymentType: widget.paymentType,paymentReference: widget.paymentReference);
                           if(paymentSuccessful){
                             await _showPaymentStatusDialog(title: "Payment Successful", message: "Subscription completed successfully, you can now access all premium features of Prep50 app.");

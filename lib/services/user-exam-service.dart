@@ -24,6 +24,7 @@ class UserExamService{
     
     if(response.statusCode == 200){
       final Map<String,dynamic> jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
       final List<dynamic> userExamsJsonList = jsonResponse["data"];
       List<UserExam> userExamsList = userExamsJsonList.map((userExamJson) => UserExam.fromJson(userExamJson)).toList();
       return userExamsList;
