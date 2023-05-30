@@ -15,6 +15,7 @@ import 'package:prep50/widgets/app_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../constants/string_data.dart';
 import '../../utils/deeplink_utils.dart';
 import '../../view-models/home_screen_view_model.dart';
 import '../../view-models/news_feed_list_screen_viewmodel.dart';
@@ -79,9 +80,33 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           height: 50,
                           width: 50,
-                          child: Image.asset(
-                            "assets/image/img1.jpg",
-                            fit: BoxFit.cover,
+                          child: FutureBuilder<User>(
+                              future: homeScreenViewModel.getLoggedInUser(),
+                              builder: (context,snapshot){
+                                if(snapshot.hasData && snapshot.data!=null){
+                                  final User user = snapshot.data!;
+                                  return user.photo.isNotEmpty?
+                                  Image.network("$BASE_URL/${user.photo}"):
+                                  Image.asset(
+                                    "assets/image/img1.jpg",
+                                    fit: BoxFit.cover,
+                                  );
+                                }
+
+                                return Center(
+                                  child: SizedBox(
+                                    height: 20.0,
+                                    width: 20.0,
+                                    child: CircularProgressIndicator(
+                                      color: kPrimaryColor,
+                                    ),
+                                  ),
+                                );
+                              return Image.asset(
+                                "assets/image/img1.jpg",
+                                fit: BoxFit.cover,
+                              );
+                            }
                           ),
                         ),
                       ),

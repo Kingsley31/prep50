@@ -173,7 +173,7 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           SizedBox(width: 10),
-          AppText.heading6M("$title")
+          Expanded(child: AppText.heading6M("$title",multiText: true,))
         ],
       ),
     );
